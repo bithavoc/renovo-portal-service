@@ -1,0 +1,24 @@
+version: "2.2"
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend.dev
+    volumes:
+      - ./:/renovo
+    restart: always
+    group_add:
+      - $GID
+    user: $UID:$GID
+    ulimits:
+      nproc: 65535
+      nofile:
+        soft: 20000
+        hard: 40000
+  pgdb:
+    image: postgres:14
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - ./.data/pgdb:/var/lib/postgresql/data
