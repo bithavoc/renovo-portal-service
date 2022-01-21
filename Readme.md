@@ -17,3 +17,9 @@ npm run start
 ```
 npm run generate-migration CreateToken
 ```
+
+## Generating New Dependencies
+
+```
+scripts/dev_frontend_npm.sh run graphql-codegen
+```
