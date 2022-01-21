@@ -6,6 +6,8 @@ services:
       dockerfile: Dockerfile.backend.dev
     volumes:
       - ./:/renovo
+    environment:
+      - DATABASE_URL=postgres://postgres:postgres@pgdb/postgres
     restart: always
     group_add:
       - $GID
