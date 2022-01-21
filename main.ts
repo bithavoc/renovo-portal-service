@@ -51,9 +51,16 @@ async function bootstrap() {
 
   const port = PORT;
 
-  app.listen({ port }, () =>
+  const hserver = app.listen({ port }, () =>
     console.log(`🚀 Server ready at http://localhost:${port}${server.graphqlPath}`)
   );
+
+  process.on('SIGINT', function () {
+    console.log("\nGracefully shutting down from SIGINT (Ctrl-C)");
+    server.stop()
+    hserver.close();
+    process.exit(0)
+  })
 }
 
 bootstrap();

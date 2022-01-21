@@ -1,0 +1,5 @@
+FROM node:14-bullseye
+WORKDIR /renovo
+USER 1000:1000
+
+CMD scripts/dev_frontend.sh
