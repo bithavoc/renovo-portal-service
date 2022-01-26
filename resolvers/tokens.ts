@@ -2,7 +2,7 @@ import { AuthenticationError } from "apollo-server";
 import { Arg, Ctx, Field, ID, InputType, Mutation, ObjectType, Query, Resolver } from "type-graphql";
 import UserEntity from "../database/entity/user";
 import TokenEntity from "../database/entity/token";
-import {sign} from 'jsonwebtoken';
+import { sign } from 'jsonwebtoken';
 import { User } from "./users";
 import { compare } from "bcrypt";
 
@@ -33,21 +33,30 @@ class Credentials {
 @Resolver(Token)
 class TokensResolver {
   @Query(returns => Token)
+  async getCurrentToken(
+    @Ctx("token") token?: TokenEntity
+  ): Promise<Token> {
+    if (!token) {
+      throw new Error("access denied")
+    }
+    return token
+  }
+  @Query(returns => Token)
   getToken(
     token: string,
   ): Promise<Token> {
-    
-    return ;
+
+    return;
   }
   @Mutation(returns => Token)
   async signIn(
-    @Arg("credentials") {email, password}: Credentials,
+    @Arg("credentials") { email, password }: Credentials,
   ): Promise<Token> {
-    const user = await UserEntity.findOne({where: { email }});
-    if(!user) {
+    const user = await UserEntity.findOne({ where: { email } });
+    if (!user) {
       throw new AuthenticationError("invalid credential")
     }
-    if(!await compare(password, user.password)) {
+    if (!await compare(password, user.password)) {
       throw new AuthenticationError("invalid credential")
     }
     let jwtToken = sign({

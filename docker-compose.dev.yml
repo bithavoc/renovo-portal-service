@@ -4,6 +4,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.backend.dev
+    ports:
+      - "4000:4000"
     volumes:
       - ./:/renovo
     environment:
@@ -26,7 +28,8 @@ services:
     volumes:
       - ./:/renovo
     environment:
-      - BACKEND_GRAPH_API=http://backend:4000/api/graphql
+      - BACKEND_URL=http://backend:4000/api/graphql
+      - NEXT_PUBLIC_BACKEND_URL=http://localhost:4000/api/graphql
     restart: always
     group_add:
       - $GID

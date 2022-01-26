@@ -19,8 +19,8 @@ export class User {
   @Field()
   lastName: string;
 
-  @Field(() => [Site])
-  sites: Site[];
+  // @Field(() => [Site])
+  // sites: Site[];
 }
 
 @InputType()
@@ -71,16 +71,16 @@ class UsersResolver {
     return user;
   }
 
-  @FieldResolver()
-  async sites(@Root() user: User) {
-    const u = await UserEntity.findOne({
-      where: {
-        userId: user.userId
-      },
-      relations: ["sites"]
-    });
-    return u.sites;
-  }
+  // @FieldResolver()
+  // async sites(@Root() user: User) {
+  //   const u = await UserEntity.findOne({
+  //     where: {
+  //       userId: user.userId
+  //     },
+  //     relations: ["sites"]
+  //   });
+  //   return u.sites;
+  // }
 }
 
 export default UsersResolver;

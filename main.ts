@@ -22,7 +22,11 @@ async function bootstrap() {
     introspection: true,
     context: async ({ req }) => {
       console.log("context being created");
-      const tokenCode = req.headers.authorization || '';
+      let tokenCode: string = req.headers.authorization || '';
+      const tokenParts = tokenCode.split(' ');
+      if (tokenParts.length > 1) {
+        tokenCode = tokenParts[1];
+      }
 
       const token = await TokenEntity.findOne({
         where: {
