@@ -27,4 +27,10 @@ export default class UserEntity extends BaseEntity {
 
     @OneToMany(type => SiteEntity, site => site.user)
     sites: SiteEntity[];
+
+    getVacCompanies(): string[] {
+        return [
+            '12f3eda9-dc87-4ca2-aaef-cc8c437d883e', // ACE
+        ]
+    }
 }

@@ -6,33 +6,14 @@ import { initDatabase } from "./database";
 import { resolvers } from "./resolvers";
 import express = require("express");
 import TokenEntity from "./database/entity/token";
-import { Api } from "./externalServices/vac/vac-sdk";
+import VacStore from "./externalServices/vacStore";
 config();
-
-const createVeamClient = (token: string) => new Api({
-  baseUrl: "https://vac.renovodata.com/api/v3",
-  baseApiParams: {
-    headers: {
-      "Authorization": `Bearer ${token}`
-    }
-  }
-});
-
-async function hola() {
-  const vac = createVeamClient(process.env.VAC_AT);
-  const companiesRes = await vac.organizations.getCompanies()
-  if (companiesRes.error) {
-    throw new Error('failed to fetch companies');
-  }
-  console.log("companies", companiesRes.error, companiesRes.data);
-}
-
-hola().then(() => { });
-
 
 const PORT = process.env.PORT || 4000;
 
 async function bootstrap() {
+  const vacStore = new VacStore();
+  await vacStore.load()
   console.debug("initialize database");
   await initDatabase();
   const schema = await buildSchema({
@@ -59,7 +40,8 @@ async function bootstrap() {
       console.log("token", token);
 
       return {
-        token: token
+        token,
+        vacStore
       };
     },
   });

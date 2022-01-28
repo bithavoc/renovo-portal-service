@@ -4,6 +4,7 @@ import UserEntity from "../database/entity/user";
 import { uuid } from 'uuidv4';
 import { hash } from 'bcrypt';
 import { Site } from "./sites";
+import { Protection } from "./protections";
 
 @ObjectType()
 export class User {
@@ -18,9 +19,6 @@ export class User {
 
   @Field()
   lastName: string;
-
-  // @Field(() => [Site])
-  // sites: Site[];
 }
 
 @InputType()
