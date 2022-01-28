@@ -37,11 +37,11 @@ class ProtectionsResolver {
     if (!token) {
       throw new ForbiddenError("access denied")
     }
-    console.log("first", vac!.allBackupServerJobs[1]);
+    // console.log("first", vac!.allBackupServerJobs[1]);
     const allowdBackupServerJobs = vac!.allBackupServerJobs.filter(job => token!.user.getVacCompanies().indexOf(job.organizationUid) !== -1);
     return allowdBackupServerJobs.map(job => ({
       id: job.instanceUid!,
-      companyName: '',
+      companyName: vac!.allCompanies.find(c => c.instanceUid === job.organizationUid)?.name || '',
       name: job.name!,
       type: "Server Backup",
       backupStore: "Some Backup store",
