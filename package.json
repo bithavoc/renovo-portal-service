@@ -6,7 +6,8 @@
   "scripts": {
     "start": "ts-node main.ts",
     "dev": "ts-node-dev main.ts",
-    "generate-migration": "typeorm migration:create -n"
+    "generate-migration": "typeorm migration:create -n",
+    "refresh-vac-api": "npx swagger-typescript-api -p https://vac.renovodata.com/api/.well-known/specification-3.2-PortalAdministrator-full-OpenApi_2_0.json -o ./externalServices/vac -n vac-sdk.ts"
   },
   "author": "",
   "license": "ISC",
@@ -17,8 +18,11 @@
     "class-validator": "^0.13.1",
     "dotenv": "^10.0.0",
     "express": "^4.17.1",
+    "file-api": "^0.10.4",
+    "form-data": "^4.0.0",
     "graphql": "^15.5.2",
     "jsonwebtoken": "^8.5.1",
+    "node-fetch": "^2.6.7",
     "pg": "^8.7.1",
     "reflect-metadata": "^0.1.13",
     "ts-node": "^10.2.1",
