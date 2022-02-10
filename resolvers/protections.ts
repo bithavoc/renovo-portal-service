@@ -44,7 +44,7 @@ class ProtectionsResolver {
       companyName: vac!.allCompanies.find(c => c.instanceUid === job.organizationUid)?.name || '',
       name: job.name!,
       type: "Server Backup",
-      backupStore: "Some Backup store",
+      backupStore: job.destination,
       subject: "some subject",
       status: job.status,
     }));
