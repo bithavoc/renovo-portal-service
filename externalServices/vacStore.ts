@@ -50,9 +50,19 @@ export default class VacStore {
         console.log("all companies", this.allCompanies.map(c => `${c.instanceUid} - ${c.name}`));
 
         this.allProtectedVirtualMachines = await loadAllResources(params => vac.protectedWorkloads.getProtectedVirtualMachines({ ...params }));
+
+        // this.allProtectedVirtualMachines[0].totalRestorePointSize
+
+        // const allProtectedVirtualMachinesBackups = await loadAllResources(params => vac.protectedWorkloads.getProtectedVirtualMachineBackups({ ...params }));
         // const aceProtectedVirtualMachines = allProtectedBackupServerBackups.filter(b => b.organizationUid === aceCompany.instanceUid);
         // console.log("vac protected virtual machines", aceProtectedVirtualMachines);
         // console.log("vac protected virtual machines", aceProtectedVirtualMachines.length);
+        // this.allProtectedVirtualMachines[0].
+        // const serverRestorePoints = await loadAllResources(params => vac.protectedWorkloads.getProtectedVirtualMachineBackupRestorePoints({ ...params }));
+        // console.log('serverRestorePoints', serverRestorePoints.length);
+        // serverRestorePoints[0].
+        //allProtectedVirtualMachinesBackups[0].
+        // vac.protectedWorkloads.get
 
         console.log("vac store loaded")
     }
