@@ -1,5 +1,5 @@
 import { Allow } from "class-validator";
-import { Api, BackupServerJob, Company, ErrorResponse, HttpResponse, ProtectedVirtualMachine, ResponseError, ResponseMetadata } from "./vac/vac-sdk";
+import { Api, BackupServerJob, Company, ErrorResponse, HttpResponse, ProtectedVirtualMachine, ProtectedVirtualMachineBackupRestorePoint, ResponseError, ResponseMetadata } from "./vac/vac-sdk";
 
 const createVeamClient = (token: string) => new Api({
     baseUrl: "https://vac.renovodata.com/api/v3",
@@ -14,6 +14,7 @@ export default class VacStore {
     allBackupServerJobs: BackupServerJob[] = [];
     allCompanies: Company[];
     allProtectedVirtualMachines: ProtectedVirtualMachine[];
+    allBackupRestorePoints: ProtectedVirtualMachineBackupRestorePoint[];
     constructor() {
 
     }
@@ -51,7 +52,20 @@ export default class VacStore {
 
         this.allProtectedVirtualMachines = await loadAllResources(params => vac.protectedWorkloads.getProtectedVirtualMachines({ ...params }));
 
-        // this.allProtectedVirtualMachines[0].totalRestorePointSize
+        const loadAllRestorePoints = async () => {
+            this.allBackupRestorePoints = [];
+            for (const vm of this.allProtectedVirtualMachines) {
+                const vmRestorePoints = await loadAllResources(params => vac.protectedWorkloads.getProtectedVirtualMachineBackupRestorePoints(vm.instanceUid, { ...params }));
+                this.allBackupRestorePoints = [...this.allBackupRestorePoints, ...vmRestorePoints];
+                await new Promise((resolve) => setTimeout(resolve, 200));
+            };
+        };
+
+        // try {
+        //     await loadAllRestorePoints();
+        // } catch (e) {
+        //     console.error('load backup restore points', e);
+        // }
 
         // const allProtectedVirtualMachinesBackups = await loadAllResources(params => vac.protectedWorkloads.getProtectedVirtualMachineBackups({ ...params }));
         // const aceProtectedVirtualMachines = allProtectedBackupServerBackups.filter(b => b.organizationUid === aceCompany.instanceUid);
