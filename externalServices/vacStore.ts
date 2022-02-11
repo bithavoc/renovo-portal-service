@@ -1,5 +1,5 @@
 import { Allow } from "class-validator";
-import { Api, BackupServerJob, Company, ErrorResponse, HttpResponse, ProtectedVirtualMachine, ProtectedVirtualMachineBackupRestorePoint, ResponseError, ResponseMetadata } from "./vac/vac-sdk";
+import { Api, BackupServerJob, Company, ErrorResponse, HttpResponse, ProtectedComputerManagedByBackupServer, ProtectedComputerManagedByConsole, ProtectedVirtualMachine, ProtectedVirtualMachineBackupRestorePoint, ResponseError, ResponseMetadata } from "./vac/vac-sdk";
 
 const createVeamClient = (token: string) => new Api({
     baseUrl: "https://vac.renovodata.com/api/v3",
@@ -15,6 +15,8 @@ export default class VacStore {
     allCompanies: Company[];
     allProtectedVirtualMachines: ProtectedVirtualMachine[];
     allBackupRestorePoints: ProtectedVirtualMachineBackupRestorePoint[];
+    allProtectedComputersByBackupServer: ProtectedComputerManagedByBackupServer[];
+    allProtectedComputersByConsole: ProtectedComputerManagedByConsole[];
     constructor() {
 
     }
@@ -52,6 +54,14 @@ export default class VacStore {
 
         this.allProtectedVirtualMachines = await loadAllResources(params => vac.protectedWorkloads.getProtectedVirtualMachines({ ...params }));
 
+        this.allProtectedComputersByBackupServer = await loadAllResources(params => vac.protectedWorkloads.getProtectedComputersManagedByBackupServer({ ...params }));
+        console.log("computers b&r", this.allProtectedComputersByBackupServer.length);
+
+        // const restorePoints = await vac.protectedWorkloads.getProtectedComputersManagedByBackupServerRestorePoints();
+        // restorePoints.data.data[0].
+        // comps[0].
+        // const comps2 = await loadAllResources(params => vac.protectedWorkloads.getProtectedComputersManagedByConsole({ ...params }));
+        // comps[0].
         const loadAllRestorePoints = async () => {
             this.allBackupRestorePoints = [];
             for (const vm of this.allProtectedVirtualMachines) {
@@ -60,6 +70,8 @@ export default class VacStore {
                 await new Promise((resolve) => setTimeout(resolve, 200));
             };
         };
+        this.allProtectedComputersByConsole = await loadAllResources(params => vac.protectedWorkloads.getProtectedComputersManagedByConsole({ ...params }));
+        console.log("allProtectedComputersByConsole", this.allProtectedComputersByConsole.length);
 
         // try {
         //     await loadAllRestorePoints();

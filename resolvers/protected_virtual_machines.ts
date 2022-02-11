@@ -13,6 +13,9 @@ export class ProtectedVirtualMachine {
 
   @Field()
   restorePointsTotalSize: number;
+
+  @Field()
+  latestRestorePointDate: string;
 }
 
 @Resolver(ProtectedVirtualMachine)
@@ -30,6 +33,7 @@ class ProtectedVirtualMachinesResolver {
       id: vm.instanceUid!,
       name: vm.name!,
       restorePointsTotalSize: vm.totalRestorePointSize,
+      latestRestorePointDate: vm.latestRestorePointDate
     }));
   }
 }

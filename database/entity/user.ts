@@ -31,6 +31,7 @@ export default class UserEntity extends BaseEntity {
     getVacCompanies(): string[] {
         return [
             '12f3eda9-dc87-4ca2-aaef-cc8c437d883e', // ACE
+            'f8e25a71-ff35-4fa0-844d-445055a4a9c4' // AL Smith
         ]
     }
 }
