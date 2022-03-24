@@ -1,4 +1,4 @@
-import { AuthenticationError } from "apollo-server";
+import { AuthenticationError, ForbiddenError } from "apollo-server";
 import { Arg, Ctx, Field, FieldResolver, ID, InputType, Mutation, ObjectType, Query, Resolver, Root } from "type-graphql";
 import OrganizationEntity from "../database/entity/organization";
 import TokenEntity from "../database/entity/token";
@@ -48,7 +48,7 @@ class OrganizationsResolver {
   ): Promise<Organization> {
     console.log("token in create site", token)
     if (!token) {
-      throw new AuthenticationError("user login required");
+      throw new ForbiddenError("user required");
     }
     const site = OrganizationEntity.create({
       id,
