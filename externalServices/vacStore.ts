@@ -1,5 +1,5 @@
 import { Allow } from "class-validator";
-import { Api, BackupServerJob, Company, ErrorResponse, HttpResponse, ProtectedComputerManagedByBackupServer, ProtectedComputerManagedByConsole, ProtectedVirtualMachine, ProtectedVirtualMachineBackupRestorePoint, ResponseError, ResponseMetadata } from "./vac/vac-sdk";
+import { Api, BackupServerJob, Company, ErrorResponse, HttpResponse, OrganizationLocation, ProtectedComputerManagedByBackupServer, ProtectedComputerManagedByConsole, ProtectedVirtualMachine, ProtectedVirtualMachineBackupRestorePoint, ResponseError, ResponseMetadata } from "./vac/vac-sdk";
 
 const createVeamClient = (token: string) => new Api({
     baseUrl: "https://vac.renovodata.com/api/v3",
@@ -17,6 +17,7 @@ export default class VacStore {
     allBackupRestorePoints: ProtectedVirtualMachineBackupRestorePoint[];
     allProtectedComputersByBackupServer: ProtectedComputerManagedByBackupServer[];
     allProtectedComputersByConsole: ProtectedComputerManagedByConsole[];
+    allLocations: OrganizationLocation[];
     constructor() {
 
     }
@@ -29,6 +30,13 @@ export default class VacStore {
         if (!aceCompany) {
             throw new Error('failed to fetch company');
         }
+
+        this.allLocations = await loadAllResources(params => vac.organizations.getLocations({ ...params }));
+        console.log("all locations", this.allLocations.length);
+        // this.allLocations[0].
+        this.allLocations.forEach(l => {
+            console.log('location', l.name);
+        })
 
         // let backupServerJobs: BackupServerJob[] = [];
         // while (true) {
@@ -50,7 +58,7 @@ export default class VacStore {
         // }
         this.allBackupServerJobs = await loadAllResources(params => vac.infrastructure.getBackupServerJobs({ ...params }));
 
-        console.log("all companies", this.allCompanies.map(c => `${c.instanceUid} - ${c.name}`));
+        console.log("all companies", this.allCompanies.length, this.allCompanies.map(c => `${c.instanceUid} - ${c.name}`));
 
         this.allProtectedVirtualMachines = await loadAllResources(params => vac.protectedWorkloads.getProtectedVirtualMachines({ ...params }));
 
@@ -72,6 +80,16 @@ export default class VacStore {
         };
         this.allProtectedComputersByConsole = await loadAllResources(params => vac.protectedWorkloads.getProtectedComputersManagedByConsole({ ...params }));
         console.log("allProtectedComputersByConsole", this.allProtectedComputersByConsole.length);
+
+        // vac.protectedWorkloads.getProtectedFileServers()
+        // this.allProtectedComputersByConsole[0].
+        // vac.infrastructure.getBackupAgents()
+        const backupAgents = await loadAllResources(params => vac.infrastructure.getBackupAgents({ ...params }));
+
+        backupAgents[0].platform
+        // vac.protectedWorkloads.agent
+
+        // vac.protectedWorkloads.getProtectedComputersManagedByBackupServerLatestRestorePoints
 
         // try {
         //     await loadAllRestorePoints();
