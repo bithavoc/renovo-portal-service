@@ -1,7 +1,8 @@
 import { Allow } from "class-validator";
+import AssetEntity from "../database/entity/Asset";
 import OrganizationEntity from "../database/entity/organization";
 import SiteEntity from "../database/entity/site";
-import { Api } from "./zerto/zerto-sdk";
+import { Api, ProtectedVpgs, Vms } from "./zerto/zerto-sdk";
 
 const createBaseParams = () => ({
     baseURL: "https://analytics.api.zerto.com",
@@ -34,6 +35,9 @@ const createZertoClient = async (username: string, password: string) => {
 const companyOrganizationId = (vacCompanyId: string) => `zorg_${vacCompanyId}`;
 
 const zsiteSiteId = (zertoSiteId: string) => `zsite_${zertoSiteId}`;
+const vmsAssetId = (vmsId: string) => `zvms_${vmsId}`;
+
+const getVmsSiteVpg = (vms: Vms, zsiteName: string): ProtectedVpgs | undefined => vms.vpgs!.find(vpg => vpg.protectedSite.name === zsiteName)
 
 export default class ZertoStore {
     constructor() {
@@ -48,6 +52,8 @@ export default class ZertoStore {
 
         const zorgs = zorgsResponse.data;
 
+        console.log("zorgs count", zorgs.length)
+
         for (const zorg of zorgs) {
             const orgId = companyOrganizationId(zorg.identifier);
             let org = await OrganizationEntity.findOne(orgId);
@@ -59,15 +65,22 @@ export default class ZertoStore {
             org.title = zorg.name;
             await org.save();
 
-            const sites = await zerto.v2.monitoringSitesList({
+            const sitesRes = await zerto.v2.monitoringSitesList({
                 zorgIdentifier: zorg.identifier,
             });
+            const sites = sitesRes.data;
+            console.log("zorg", zorg.name, " site count", sites.length)
 
-            const vpgs = await zerto.v2.monitoringVpgsList({
-                zorgIdentifier: zorg.identifier,
-            })
+            // const vpgs = await zerto.v2.monitoringVpgsList({
+            //     zorgIdentifier: zorg.identifier,
+            // })
 
-            for (const zsite of sites.data) {
+            const vmsRes = await zerto.v2.monitoringProtectedVmsList()
+
+            const vmsList = vmsRes.data as Vms[];
+            // console.log("vms", vmsList);
+
+            for (const zsite of sites) {
                 const siteId = zsiteSiteId(zsite.identifier);
                 let site = await SiteEntity.findOne(siteId); // HACK: could be overriding organization site belongs to multiple zorgs
                 if (!site) {
@@ -80,8 +93,24 @@ export default class ZertoStore {
                 site.zertoMeta = zsite;
                 await site.save();
                 console.log("site saved", site.title)
-                for (const vpg of vpgs.data.vpgs) {
-                    console.log("vpg", vpg)
+                for (const vms of vmsList) {
+                    const vpg = getVmsSiteVpg(vms, zsite.name);
+                    if (!vpg) {
+                        continue
+                    }
+                    const assetId = vmsAssetId(vms.identifier);
+                    let asset = await AssetEntity.findOne(assetId); // HACK: could be overriding vms site belongs to multiple zorgs
+                    if (!asset) {
+                        asset = new AssetEntity()
+                        asset.assetId = assetId;
+                        asset.createdAt = new Date()
+                    }
+                    asset.site = site;
+                    asset.organization = org;
+                    asset.title = vms.name;
+                    asset.zertoMeta = vms;
+                    await asset.save();
+                    console.log("asset saved", asset.title)
                 }
             }
         }
@@ -91,24 +120,3 @@ export default class ZertoStore {
     }
 }
 
-// async function loadAllResources<T>(loadPage: (params: { offset: number, limit: number }) => Promise<HttpResponse<{ meta?: ResponseMetadata; data?: T[]; errors?: ResponseError[] }, ErrorResponse>>): Promise<T[]> {
-//     let all: T[] = [];
-//     while (true) {
-//         let offset = all.length;
-//         console.log('fetching with offset', offset);
-//         const response = await loadPage({
-//             limit: 300,
-//             offset,
-//         });
-//         if (response.error) {
-//             throw new Error(`failed to fetch page from vac, ${response.error}`);
-//         }
-//         const result = response.data.data!;
-//         if (result.length === 0) {
-//             console.log('no more items in result')
-//             break;
-//         }
-//         all = [...all, ...result];
-//     }
-//     return all;
-// }

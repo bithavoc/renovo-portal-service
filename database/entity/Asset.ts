@@ -19,6 +19,10 @@ export default class AssetEntity extends BaseEntity {
     @JoinColumn({ name: "site_id" })
     site: SiteEntity;
 
+    @ManyToOne(() => OrganizationEntity, org => org.assets)
+    @JoinColumn({ name: "organization_id" })
+    organization: OrganizationEntity;
+
     @Column({ type: 'simple-json', name: "zerto_meta", nullable: true })
     zertoMeta?: Vms;
 

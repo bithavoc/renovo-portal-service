@@ -1,4 +1,5 @@
 import { Entity, Column, PrimaryColumn, BaseEntity, ManyToOne, JoinColumn, OneToMany } from "typeorm";
+import AssetEntity from "./Asset";
 import OrganizationMemberEntity from "./OrganizationMember";
 import SiteEntity from "./site";
 
@@ -18,4 +19,7 @@ export default class OrganizationEntity extends BaseEntity {
 
     @OneToMany(type => SiteEntity, site => site.organization)
     sites: SiteEntity[];
+
+    @OneToMany(type => AssetEntity, asset => asset.organization)
+    assets: AssetEntity[];
 }
