@@ -29,7 +29,7 @@ class NewOrganizationMember {
   organizationId: string;
 
   @Field()
-  userId: string;
+  userIdOrEmail: string;
 }
 
 @Resolver(OrganizationMember)
@@ -47,7 +47,7 @@ class OrganizationMembersResolver {
 
   @Mutation(returns => OrganizationMember)
   async createOrganizationMember(
-    @Arg("info") { organizationId, userId }: NewOrganizationMember,
+    @Arg("info") { organizationId, userIdOrEmail }: NewOrganizationMember,
     @Ctx("token") token?: TokenEntity,
   ): Promise<OrganizationMember> {
     console.log("token in create site", token)
@@ -56,7 +56,16 @@ class OrganizationMembersResolver {
     }
 
     const organization = await OrganizationEntity.findOneOrFail(organizationId)
-    const user = await UserEntity.findByIdOrEmailOrFail(userId)
+    const user = await UserEntity.findByIdOrEmailOrFail(userIdOrEmail)
+
+    const existing = await OrganizationMemberEntity.createQueryBuilder('member').where('member.organization_id = :organizationId AND member.user_id = :userId', {
+      organizationId,
+      userId: user.userId,
+    }).getOne()
+    if (existing) {
+      throw new Error("member already exists")
+    }
+    console.log("existing", existing);
 
     const rec = OrganizationMemberEntity.create({
       id: uuid(),
