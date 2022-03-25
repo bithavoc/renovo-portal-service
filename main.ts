@@ -54,7 +54,11 @@ async function bootstrap() {
   })
   server.applyMiddleware({
     app,
-    path: '/api/graphql'
+    path: '/api/graphql',
+    cors: {
+      origin: "*",
+      credentials: true,
+    }
   });
 
   const port = PORT;
