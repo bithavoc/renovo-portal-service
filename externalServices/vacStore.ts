@@ -1,5 +1,6 @@
 import { Allow } from "class-validator";
 import OrganizationEntity from "../database/entity/organization";
+import SiteEntity from "../database/entity/site";
 import { Api, BackupServerJob, Company, ErrorResponse, HttpResponse, OrganizationLocation, ProtectedComputerManagedByBackupServer, ProtectedComputerManagedByConsole, ProtectedVirtualMachine, ProtectedVirtualMachineBackupRestorePoint, ResponseError, ResponseMetadata } from "./vac/vac-sdk";
 
 const createVeamClient = (token: string) => new Api({
@@ -12,6 +13,8 @@ const createVeamClient = (token: string) => new Api({
 });
 
 const companyOrganizationId = (vacCompanyId: string) => `veeamc_${vacCompanyId}`;
+
+const locationSiteId = (locationId: string) => `veeamloc_${locationId}`;
 
 export default class VacStore {
     allBackupServerJobs: BackupServerJob[] = [];
@@ -29,6 +32,7 @@ export default class VacStore {
         const vac = createVeamClient(process.env.VAC_AT);
 
         this.allCompanies = await loadAllResources(params => vac.organizations.getCompanies({ ...params }));
+        this.allLocations = await loadAllResources(params => vac.organizations.getLocations({ ...params }));
 
         for (const company of this.allCompanies) {
             const orgId = companyOrganizationId(company.instanceUid);
@@ -40,14 +44,26 @@ export default class VacStore {
             }
             org.title = company.name;
             await org.save();
-        }
 
-        // this.allLocations = await loadAllResources(params => vac.organizations.getLocations({ ...params }));
-        // console.log("all locations", this.allLocations.length);
-        // // this.allLocations[0].
-        // this.allLocations.forEach(l => {
-        //     console.log('location', l.name);
-        // })
+            console.log("all locations", this.allLocations.length);
+            for (const loc of this.allLocations) {
+                if (loc.organizationUid !== company.instanceUid) {
+                    continue;
+                }
+                const siteId = locationSiteId(loc.instanceUid);
+                let site = await SiteEntity.findOne(siteId);
+                if (!site) {
+                    site = new SiteEntity()
+                    site.siteId = siteId;
+                    site.createdAt = new Date()
+                }
+                site.organization = org;
+                site.title = loc.name;
+                site.veeamMeta = loc;
+                await site.save();
+                console.log("site saved", site.title)
+            }
+        }
 
         // let backupServerJobs: BackupServerJob[] = [];
         // while (true) {
