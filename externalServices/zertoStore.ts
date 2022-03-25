@@ -63,6 +63,10 @@ export default class ZertoStore {
                 zorgIdentifier: zorg.identifier,
             });
 
+            const vpgs = await zerto.v2.monitoringVpgsList({
+                zorgIdentifier: zorg.identifier,
+            })
+
             for (const zsite of sites.data) {
                 const siteId = zsiteSiteId(zsite.identifier);
                 let site = await SiteEntity.findOne(siteId); // HACK: could be overriding organization site belongs to multiple zorgs
@@ -76,11 +80,12 @@ export default class ZertoStore {
                 site.zertoMeta = zsite;
                 await site.save();
                 console.log("site saved", site.title)
+                for (const vpg of vpgs.data.vpgs) {
+                    console.log("vpg", vpg)
+                }
             }
         }
 
-        const vms = await zerto.v2.monitoringProtectedVmsList()
-        // vms.data.vpgs[0].
 
         console.log("zerto store loaded")
     }

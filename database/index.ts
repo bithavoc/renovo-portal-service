@@ -1,5 +1,6 @@
 
 import { createConnection } from "typeorm";
+import AssetEntity from "./entity/Asset";
 import OrganizationEntity from "./entity/organization";
 import OrganizationMemberEntity from "./entity/OrganizationMember";
 import SiteEntity from "./entity/site";
@@ -17,12 +18,13 @@ import { RebuildUserIdConstraints1648168443088 } from "./migration/1648168443088
 import { OrgMemberUnique1648170087959 } from "./migration/1648170087959-OrgMemberUnique";
 import { ChangeSiteOrganization1648181269738 } from "./migration/1648181269738-ChangeSiteOrganization";
 import { AddMetasToSites1648181663953 } from "./migration/1648181663953-AddMetasToSites";
+import { CreateAssetsTable1648185874871 } from "./migration/1648185874871-CreateAssetsTable";
 
 export const initDatabase = () => createConnection({
     "type": "postgres",
     "url": process.env.DATABASE_URL,
     "synchronize": false,
-    "logging": true,
+    // "logging": true,
     "migrationsRun": true,
     "entities": [
         UserEntity,
@@ -30,6 +32,7 @@ export const initDatabase = () => createConnection({
         SiteEntity,
         OrganizationEntity,
         OrganizationMemberEntity,
+        AssetEntity,
     ],
     "migrations": [
         CreateUser1630703672513,
@@ -44,5 +47,6 @@ export const initDatabase = () => createConnection({
         OrgMemberUnique1648170087959,
         ChangeSiteOrganization1648181269738,
         AddMetasToSites1648181663953,
+        CreateAssetsTable1648185874871,
     ]
 });
