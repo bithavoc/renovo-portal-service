@@ -1,5 +1,6 @@
 import { Entity, Column, PrimaryColumn, BaseEntity, ManyToOne, JoinColumn, OneToMany } from "typeorm";
 import OrganizationMemberEntity from "./OrganizationMember";
+import SiteEntity from "./site";
 
 @Entity({ name: "organizations" })
 export default class OrganizationEntity extends BaseEntity {
@@ -14,4 +15,7 @@ export default class OrganizationEntity extends BaseEntity {
 
     @OneToMany(type => OrganizationMemberEntity, member => member.organization)
     members: OrganizationMemberEntity[];
+
+    @OneToMany(type => SiteEntity, site => site.organization)
+    sites: SiteEntity[];
 }

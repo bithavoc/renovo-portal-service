@@ -1,5 +1,5 @@
 import { Entity, Column, PrimaryColumn, BaseEntity, ManyToOne, JoinColumn, OneToMany } from "typeorm";
-import UserEntity from "./user";
+import OrganizationEntity from "./organization";
 
 @Entity({ name: "sites" })
 export default class SiteEntity extends BaseEntity {
@@ -15,7 +15,7 @@ export default class SiteEntity extends BaseEntity {
     @Column({ name: "user_id" })
     userId: string;
 
-    @ManyToOne(() => UserEntity, user => user.sites)
-    @JoinColumn({ name: "user_id" })
-    user: UserEntity;
+    @ManyToOne(() => OrganizationEntity, org => org.sites)
+    @JoinColumn({ name: "organization_id" })
+    organization: OrganizationEntity;
 }

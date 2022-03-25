@@ -26,9 +26,6 @@ export default class UserEntity extends BaseEntity {
     @OneToMany(type => TokenEntity, token => token.user)
     tokens: TokenEntity[];
 
-    @OneToMany(type => SiteEntity, site => site.user)
-    sites: SiteEntity[];
-
     @OneToMany(type => OrganizationMemberEntity, member => member.user)
     organizationMembers: OrganizationMemberEntity[];
 
