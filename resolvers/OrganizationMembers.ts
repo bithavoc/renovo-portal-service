@@ -64,8 +64,7 @@ class OrganizationMembersResolver {
       organization,
       createdAt: new Date(),
     });
-    await rec.save();
-    return rec;
+    return await rec.save();
   }
 
   // @FieldResolver()
