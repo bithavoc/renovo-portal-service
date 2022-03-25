@@ -12,6 +12,8 @@ import { AddPasswordToUsers1630761427800 } from "./migration/1630761427800-AddPa
 import { CreateSitesTable1630780727527 } from "./migration/1630780727527-CreateSitesTable";
 import { CreateOrganizationTable1648161090926 } from "./migration/1648161090926-CreateOrganizationTable";
 import { CreateOrganizationMemberTable1648164146086 } from "./migration/1648164146086-CreateOrganizationMemberTable";
+import { ChangeUserIdType1648167963441 } from "./migration/1648167963441-ChangeUserIdType";
+import { RebuildUserIdConstraints1648168443088 } from "./migration/1648168443088-RebuildUserIdConstraints";
 
 export const initDatabase = () => createConnection({
     "type": "postgres",
@@ -34,5 +36,7 @@ export const initDatabase = () => createConnection({
         CreateSitesTable1630780727527,
         CreateOrganizationTable1648161090926,
         CreateOrganizationMemberTable1648164146086,
+        ChangeUserIdType1648167963441,
+        RebuildUserIdConstraints1648168443088,
     ]
 });
