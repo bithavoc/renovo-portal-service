@@ -8,13 +8,15 @@
     "importer": "tsnd importer.ts",
     "dev": "ts-node-dev main.ts --trace-warnings",
     "generate-migration": "typeorm migration:create -n",
-    "refresh-vac-api": "npx swagger-typescript-api -p https://vac.renovodata.com/api/.well-known/specification-3.2-PortalAdministrator-full-OpenApi_2_0.json -o ./externalServices/vac -n vac-sdk.ts"
+    "refresh-vac-api": "npx swagger-typescript-api -p https://vac.renovodata.com/api/.well-known/specification-3.2-PortalAdministrator-full-OpenApi_2_0.json -o ./externalServices/vac -n vac-sdk.ts",
+    "refresh-zerto-api": "npx swagger-typescript-api -h --axios -p https://docs.api.zerto.com/global-v2.yaml?rnd=94208 -o ./externalServices/zerto -n zerto-sdk.ts"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
     "apollo-server": "^3.3.0",
     "apollo-server-express": "^3.3.0",
+    "axios": "^0.21.4",
     "bcrypt": "^5.0.1",
     "class-validator": "^0.13.1",
     "dotenv": "^10.0.0",

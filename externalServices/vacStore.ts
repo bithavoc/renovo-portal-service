@@ -29,10 +29,6 @@ export default class VacStore {
         const vac = createVeamClient(process.env.VAC_AT);
 
         this.allCompanies = await loadAllResources(params => vac.organizations.getCompanies({ ...params }));
-        const aceCompany = this.allCompanies.find(c => c.name === 'ACE');
-        if (!aceCompany) {
-            throw new Error('failed to fetch company');
-        }
 
         for (const company of this.allCompanies) {
             const orgId = companyOrganizationId(company.instanceUid);
@@ -46,12 +42,12 @@ export default class VacStore {
             await org.save();
         }
 
-        this.allLocations = await loadAllResources(params => vac.organizations.getLocations({ ...params }));
-        console.log("all locations", this.allLocations.length);
-        // this.allLocations[0].
-        this.allLocations.forEach(l => {
-            console.log('location', l.name);
-        })
+        // this.allLocations = await loadAllResources(params => vac.organizations.getLocations({ ...params }));
+        // console.log("all locations", this.allLocations.length);
+        // // this.allLocations[0].
+        // this.allLocations.forEach(l => {
+        //     console.log('location', l.name);
+        // })
 
         // let backupServerJobs: BackupServerJob[] = [];
         // while (true) {
@@ -71,37 +67,37 @@ export default class VacStore {
         //     }
         //     backupServerJobs = [...backupServerJobs, ...res];
         // }
-        this.allBackupServerJobs = await loadAllResources(params => vac.infrastructure.getBackupServerJobs({ ...params }));
+        // this.allBackupServerJobs = await loadAllResources(params => vac.infrastructure.getBackupServerJobs({ ...params }));
 
-        console.log("all companies", this.allCompanies.length, this.allCompanies.map(c => `${c.instanceUid} - ${c.name}`));
+        // console.log("all companies", this.allCompanies.length, this.allCompanies.map(c => `${c.instanceUid} - ${c.name}`));
 
-        this.allProtectedVirtualMachines = await loadAllResources(params => vac.protectedWorkloads.getProtectedVirtualMachines({ ...params }));
+        // this.allProtectedVirtualMachines = await loadAllResources(params => vac.protectedWorkloads.getProtectedVirtualMachines({ ...params }));
 
-        this.allProtectedComputersByBackupServer = await loadAllResources(params => vac.protectedWorkloads.getProtectedComputersManagedByBackupServer({ ...params }));
-        console.log("computers b&r", this.allProtectedComputersByBackupServer.length);
+        // this.allProtectedComputersByBackupServer = await loadAllResources(params => vac.protectedWorkloads.getProtectedComputersManagedByBackupServer({ ...params }));
+        // console.log("computers b&r", this.allProtectedComputersByBackupServer.length);
 
-        // const restorePoints = await vac.protectedWorkloads.getProtectedComputersManagedByBackupServerRestorePoints();
-        // restorePoints.data.data[0].
-        // comps[0].
-        // const comps2 = await loadAllResources(params => vac.protectedWorkloads.getProtectedComputersManagedByConsole({ ...params }));
-        // comps[0].
-        const loadAllRestorePoints = async () => {
-            this.allBackupRestorePoints = [];
-            for (const vm of this.allProtectedVirtualMachines) {
-                const vmRestorePoints = await loadAllResources(params => vac.protectedWorkloads.getProtectedVirtualMachineBackupRestorePoints(vm.instanceUid, { ...params }));
-                this.allBackupRestorePoints = [...this.allBackupRestorePoints, ...vmRestorePoints];
-                await new Promise((resolve) => setTimeout(resolve, 200));
-            };
-        };
-        this.allProtectedComputersByConsole = await loadAllResources(params => vac.protectedWorkloads.getProtectedComputersManagedByConsole({ ...params }));
-        console.log("allProtectedComputersByConsole", this.allProtectedComputersByConsole.length);
+        // // const restorePoints = await vac.protectedWorkloads.getProtectedComputersManagedByBackupServerRestorePoints();
+        // // restorePoints.data.data[0].
+        // // comps[0].
+        // // const comps2 = await loadAllResources(params => vac.protectedWorkloads.getProtectedComputersManagedByConsole({ ...params }));
+        // // comps[0].
+        // const loadAllRestorePoints = async () => {
+        //     this.allBackupRestorePoints = [];
+        //     for (const vm of this.allProtectedVirtualMachines) {
+        //         const vmRestorePoints = await loadAllResources(params => vac.protectedWorkloads.getProtectedVirtualMachineBackupRestorePoints(vm.instanceUid, { ...params }));
+        //         this.allBackupRestorePoints = [...this.allBackupRestorePoints, ...vmRestorePoints];
+        //         await new Promise((resolve) => setTimeout(resolve, 200));
+        //     };
+        // };
+        // this.allProtectedComputersByConsole = await loadAllResources(params => vac.protectedWorkloads.getProtectedComputersManagedByConsole({ ...params }));
+        // console.log("allProtectedComputersByConsole", this.allProtectedComputersByConsole.length);
 
-        // vac.protectedWorkloads.getProtectedFileServers()
-        // this.allProtectedComputersByConsole[0].
-        // vac.infrastructure.getBackupAgents()
-        const backupAgents = await loadAllResources(params => vac.infrastructure.getBackupAgents({ ...params }));
+        // // vac.protectedWorkloads.getProtectedFileServers()
+        // // this.allProtectedComputersByConsole[0].
+        // // vac.infrastructure.getBackupAgents()
+        // const backupAgents = await loadAllResources(params => vac.infrastructure.getBackupAgents({ ...params }));
 
-        backupAgents[0].platform
+        // backupAgents[0].platform
         // vac.protectedWorkloads.agent
 
         // vac.protectedWorkloads.getProtectedComputersManagedByBackupServerLatestRestorePoints
