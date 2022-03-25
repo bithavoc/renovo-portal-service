@@ -1,4 +1,5 @@
 import { Entity, Column, PrimaryColumn, BaseEntity, ManyToOne, JoinColumn, OneToMany } from "typeorm";
+import OrganizationMemberEntity from "./OrganizationMember";
 
 @Entity({ name: "organizations" })
 export default class OrganizationEntity extends BaseEntity {
@@ -10,4 +11,7 @@ export default class OrganizationEntity extends BaseEntity {
 
     @Column({ name: "created_at" })
     createdAt: Date;
+
+    @OneToMany(type => OrganizationMemberEntity, member => member.organization)
+    members: OrganizationMemberEntity[];
 }

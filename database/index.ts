@@ -1,6 +1,7 @@
 
 import { createConnection } from "typeorm";
 import OrganizationEntity from "./entity/organization";
+import OrganizationMemberEntity from "./entity/OrganizationMember";
 import SiteEntity from "./entity/site";
 import TokenEntity from "./entity/token";
 import UserEntity from "./entity/user";
@@ -10,6 +11,7 @@ import { AddCreatedAtToUsers1630761146172 } from "./migration/1630761146172-AddC
 import { AddPasswordToUsers1630761427800 } from "./migration/1630761427800-AddPasswordToUsers";
 import { CreateSitesTable1630780727527 } from "./migration/1630780727527-CreateSitesTable";
 import { CreateOrganizationTable1648161090926 } from "./migration/1648161090926-CreateOrganizationTable";
+import { CreateOrganizationMemberTable1648164146086 } from "./migration/1648164146086-CreateOrganizationMemberTable";
 
 export const initDatabase = () => createConnection({
     "type": "postgres",
@@ -22,6 +24,7 @@ export const initDatabase = () => createConnection({
         TokenEntity,
         SiteEntity,
         OrganizationEntity,
+        OrganizationMemberEntity,
     ],
     "migrations": [
         CreateUser1630703672513,
@@ -30,5 +33,6 @@ export const initDatabase = () => createConnection({
         AddPasswordToUsers1630761427800,
         CreateSitesTable1630780727527,
         CreateOrganizationTable1648161090926,
+        CreateOrganizationMemberTable1648164146086,
     ]
 });

@@ -1,4 +1,5 @@
 import { Entity, Column, PrimaryColumn, BaseEntity, OneToMany } from "typeorm";
+import OrganizationMemberEntity from "./OrganizationMember";
 import SiteEntity from "./site";
 import TokenEntity from "./token";
 
@@ -27,6 +28,23 @@ export default class UserEntity extends BaseEntity {
 
     @OneToMany(type => SiteEntity, site => site.user)
     sites: SiteEntity[];
+
+    @OneToMany(type => OrganizationMemberEntity, member => member.user)
+    organizationMembers: OrganizationMemberEntity[];
+
+    static findByIdOrEmail(idOrEmail: string) {
+        return UserEntity.createQueryBuilder("user").where("user.email = :idOrEmail OR user.user_id = :idOrEmail", {
+            idOrEmail
+        });
+    }
+
+    static async findByIdOrEmailOrFail(idOrEmail: string) {
+        const user = await this.findByIdOrEmail(idOrEmail).getOne()
+        if (!user) {
+            throw new Error("user not found")
+        }
+        return user;
+    }
 
     getVacCompanies(): string[] {
         return [

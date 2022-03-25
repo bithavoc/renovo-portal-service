@@ -14,9 +14,6 @@ export class Organization {
 
   @Field()
   createdAt: Date;
-
-  // @Field(() => [Patient])
-  // patients: Patient[];
 }
 
 @InputType()

@@ -22,6 +22,7 @@ export default class VacStore {
 
     }
     async load() {
+        return;
         console.log("vac store loading")
         const vac = createVeamClient(process.env.VAC_AT);
 
