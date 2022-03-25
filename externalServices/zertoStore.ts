@@ -2,7 +2,7 @@ import { Allow } from "class-validator";
 import AssetEntity from "../database/entity/Asset";
 import OrganizationEntity from "../database/entity/organization";
 import SiteEntity from "../database/entity/site";
-import { Api, ProtectedVpgs, Vms } from "./zerto/zerto-sdk";
+import { Api, HttpClient, ProtectedVpgs, RequestParams, SiteDetails, Vms } from "./zerto/zerto-sdk";
 
 const createBaseParams = () => ({
     baseURL: "https://analytics.api.zerto.com",
@@ -39,6 +39,17 @@ const vmsAssetId = (vmsId: string) => `zvms_${vmsId}`;
 
 const getVmsSiteVpg = (vms: Vms, zsiteName: string): ProtectedVpgs | undefined => vms.vpgs!.find(vpg => vpg.protectedSite.name === zsiteName)
 
+
+const plannerSitesList = (c: HttpClient, query?: { zorgIdentifier?: string }, params: RequestParams = {}) =>
+    c.request<SiteDetails[], Error>({
+        path: `/v2/planner/sites`,
+        method: "GET",
+        query,
+        secure: true,
+        format: "json",
+        ...params,
+    });
+
 export default class ZertoStore {
     constructor() {
 
@@ -65,7 +76,9 @@ export default class ZertoStore {
             org.title = zorg.name;
             await org.save();
 
-            const sitesRes = await zerto.v2.monitoringSitesList({
+            zerto.v2.monitoringSitesList()
+
+            const sitesRes = await plannerSitesList(zerto, {
                 zorgIdentifier: zorg.identifier,
             });
             const sites = sitesRes.data;
@@ -119,4 +132,3 @@ export default class ZertoStore {
         console.log("zerto store loaded")
     }
 }
-
