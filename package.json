@@ -5,6 +5,7 @@
   "main": "main.ts",
   "scripts": {
     "start": "ts-node main.ts",
+    "importer": "tsnd importer.ts",
     "dev": "ts-node-dev main.ts --trace-warnings",
     "generate-migration": "typeorm migration:create -n",
     "refresh-vac-api": "npx swagger-typescript-api -p https://vac.renovodata.com/api/.well-known/specification-3.2-PortalAdministrator-full-OpenApi_2_0.json -o ./externalServices/vac -n vac-sdk.ts"
