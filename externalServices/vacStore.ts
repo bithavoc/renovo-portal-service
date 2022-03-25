@@ -1,4 +1,5 @@
 import { Allow } from "class-validator";
+import AssetEntity from "../database/entity/Asset";
 import OrganizationEntity from "../database/entity/organization";
 import SiteEntity from "../database/entity/site";
 import { Api, BackupServerJob, Company, ErrorResponse, HttpResponse, OrganizationLocation, ProtectedComputerManagedByBackupServer, ProtectedComputerManagedByConsole, ProtectedVirtualMachine, ProtectedVirtualMachineBackupRestorePoint, ResponseError, ResponseMetadata } from "./vac/vac-sdk";
@@ -15,6 +16,7 @@ const createVeamClient = (token: string) => new Api({
 const companyOrganizationId = (vacCompanyId: string) => `veeamc_${vacCompanyId}`;
 
 const locationSiteId = (locationId: string) => `veeamloc_${locationId}`;
+const vmAssetId = (vmInstanceId: string) => `veeamvm_${vmInstanceId}`;
 
 export default class VacStore {
     allBackupServerJobs: BackupServerJob[] = [];
@@ -33,6 +35,8 @@ export default class VacStore {
 
         this.allCompanies = await loadAllResources(params => vac.organizations.getCompanies({ ...params }));
         this.allLocations = await loadAllResources(params => vac.organizations.getLocations({ ...params }));
+        // this.allProtectedComputersByConsole = await loadAllResources(params => vac.protectedWorkloads.getProtectedComputersManagedByConsole({ ...params }));
+        this.allProtectedVirtualMachines = await loadAllResources(params => vac.protectedWorkloads.getProtectedVirtualMachines({ ...params }));
 
         for (const company of this.allCompanies) {
             const orgId = companyOrganizationId(company.instanceUid);
@@ -62,6 +66,27 @@ export default class VacStore {
                 site.veeamMeta = loc;
                 await site.save();
                 console.log("site saved", site.title)
+
+                for (const pvm of this.allProtectedVirtualMachines) {
+                    if (pvm.organizationUid !== loc.organizationUid) {
+                        continue
+                    }
+                    const assetId = vmAssetId(pvm.instanceUid);
+                    let asset = await AssetEntity.findOne(assetId);
+                    if (!asset) {
+                        asset = new AssetEntity()
+                        asset.assetId = assetId;
+                        asset.createdAt = new Date()
+                    }
+                    asset.site = site;
+                    asset.organization = org;
+                    asset.title = pvm.name;
+                    asset.veeamMeta = {
+                        vm: pvm,
+                    };
+                    await asset.save();
+                    console.log("asset saved", asset.title)
+                }
             }
         }
 
@@ -87,7 +112,6 @@ export default class VacStore {
 
         // console.log("all companies", this.allCompanies.length, this.allCompanies.map(c => `${c.instanceUid} - ${c.name}`));
 
-        // this.allProtectedVirtualMachines = await loadAllResources(params => vac.protectedWorkloads.getProtectedVirtualMachines({ ...params }));
 
         // this.allProtectedComputersByBackupServer = await loadAllResources(params => vac.protectedWorkloads.getProtectedComputersManagedByBackupServer({ ...params }));
         // console.log("computers b&r", this.allProtectedComputersByBackupServer.length);
@@ -105,7 +129,6 @@ export default class VacStore {
         //         await new Promise((resolve) => setTimeout(resolve, 200));
         //     };
         // };
-        // this.allProtectedComputersByConsole = await loadAllResources(params => vac.protectedWorkloads.getProtectedComputersManagedByConsole({ ...params }));
         // console.log("allProtectedComputersByConsole", this.allProtectedComputersByConsole.length);
 
         // // vac.protectedWorkloads.getProtectedFileServers()

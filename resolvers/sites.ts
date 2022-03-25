@@ -36,35 +36,35 @@ class NewSite {
 
 @Resolver(Site)
 class SitesResolver {
-  @Query(returns => Site)
-  async getSite(
-    @Arg("siteId") siteId: string,
-  ): Promise<Site> {
-    return await SiteEntity.findOne({
-      where: {
-        siteId,
-      }
-    });
-  }
+  // @Query(returns => Site)
+  // async getSite(
+  //   @Arg("siteId") siteId: string,
+  // ): Promise<Site> {
+  //   return await SiteEntity.findOne({
+  //     where: {
+  //       siteId,
+  //     }
+  //   });
+  // }
 
-  @Mutation(returns => Site)
-  async createSite(
-    @Arg("info") { siteId, title }: NewSite,
-    @Ctx("token") token?: TokenEntity,
-  ): Promise<Site> {
-    console.log("token in create site", token)
-    if (!token) {
-      throw new AuthenticationError("user login required");
-    }
-    const site = SiteEntity.create({
-      siteId,
-      title,
-      userId: token.userId,
-      createdAt: new Date(),
-    });
-    await site.save();
-    return site;
-  }
+  // @Mutation(returns => Site)
+  // async createSite(
+  //   @Arg("info") { siteId, title }: NewSite,
+  //   @Ctx("token") token?: TokenEntity,
+  // ): Promise<Site> {
+  //   console.log("token in create site", token)
+  //   if (!token) {
+  //     throw new AuthenticationError("user login required");
+  //   }
+  //   const site = SiteEntity.create({
+  //     siteId,
+  //     title,
+  //     userId: token.userId,
+  //     createdAt: new Date(),
+  //   });
+  //   await site.save();
+  //   return site;
+  // }
 
   // @FieldResolver()
   // async patients(@Root() site: Site) {
