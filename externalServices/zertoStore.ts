@@ -2,14 +2,35 @@ import { Allow } from "class-validator";
 import OrganizationEntity from "../database/entity/organization";
 import { Api } from "./zerto/zerto-sdk";
 
-const createZertoClient = (token: string) => new Api({
+const createBaseParams = () => ({
     baseURL: "https://analytics.api.zerto.com",
-    params: {
-        headers: {
-            "Authorization": `Bearer ${token}`
-        }
-    }
 });
+
+const createZertoClient = async (username: string, password: string) => {
+    const anonApi = new Api({
+        ...createBaseParams(),
+    });
+
+    console.log("zerto token negotiating")
+    const tokenRes = await anonApi.v2.authTokenCreate({
+        username,
+        password,
+    })
+
+    const token = tokenRes.data.token;
+
+    console.log("zerto token ok")
+    const authApi = new Api({
+        baseURL: "https://analytics.api.zerto.com",
+        ...createBaseParams(),
+        params: {
+            headers: {
+                "Authorization": `Bearer ${token}`
+            }
+        }
+    });
+    return authApi;
+};
 
 const companyOrganizationId = (vacCompanyId: string) => `zorg_${vacCompanyId}`;
 
@@ -19,7 +40,8 @@ export default class ZertoStore {
     }
     async load() {
         console.log("zerto store loading")
-        const zerto = createZertoClient(process.env.ZERTO_AT);
+
+        const zerto = await createZertoClient(process.env.ZERTO_USERNAME, process.env.ZERTO_PASSWORD);
 
         const zorgsResponse = await zerto.v2.monitoringZorgsList();
 
