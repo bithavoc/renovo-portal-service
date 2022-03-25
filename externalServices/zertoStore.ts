@@ -69,7 +69,7 @@ export default class ZertoStore {
                 zorgIdentifier: zorg.identifier,
             });
             const sites = sitesRes.data;
-            console.log("zorg", zorg.name, " site count", sites.length)
+            console.log("zorg", zorg.name, " site count", sites.map(s => s.name))
 
             // const vpgs = await zerto.v2.monitoringVpgsList({
             //     zorgIdentifier: zorg.identifier,
