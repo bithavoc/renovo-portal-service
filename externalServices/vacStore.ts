@@ -1,4 +1,5 @@
 import { Allow } from "class-validator";
+import OrganizationEntity from "../database/entity/organization";
 import { Api, BackupServerJob, Company, ErrorResponse, HttpResponse, OrganizationLocation, ProtectedComputerManagedByBackupServer, ProtectedComputerManagedByConsole, ProtectedVirtualMachine, ProtectedVirtualMachineBackupRestorePoint, ResponseError, ResponseMetadata } from "./vac/vac-sdk";
 
 const createVeamClient = (token: string) => new Api({
@@ -9,6 +10,8 @@ const createVeamClient = (token: string) => new Api({
         }
     }
 });
+
+const companyOrganizationId = (vacCompanyId: string) => `veeamc_${vacCompanyId}`;
 
 export default class VacStore {
     allBackupServerJobs: BackupServerJob[] = [];
@@ -22,7 +25,6 @@ export default class VacStore {
 
     }
     async load() {
-        return;
         console.log("vac store loading")
         const vac = createVeamClient(process.env.VAC_AT);
 
@@ -30,6 +32,18 @@ export default class VacStore {
         const aceCompany = this.allCompanies.find(c => c.name === 'ACE');
         if (!aceCompany) {
             throw new Error('failed to fetch company');
+        }
+
+        for (const company of this.allCompanies) {
+            const orgId = companyOrganizationId(company.instanceUid);
+            let org = await OrganizationEntity.findOne(orgId);
+            if (!org) {
+                org = new OrganizationEntity()
+                org.id = orgId;
+                org.createdAt = new Date()
+            }
+            org.title = company.name;
+            await org.save();
         }
 
         this.allLocations = await loadAllResources(params => vac.organizations.getLocations({ ...params }));
