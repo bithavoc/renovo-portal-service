@@ -23,10 +23,8 @@ const createZertoClient = async (username: string, password: string) => {
     const authApi = new Api({
         baseURL: "https://analytics.api.zerto.com",
         ...createBaseParams(),
-        params: {
-            headers: {
-                "Authorization": `Bearer ${token}`
-            }
+        headers: {
+            "Authorization": `Bearer ${token}`
         }
     });
     return authApi;
