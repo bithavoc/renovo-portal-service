@@ -1,5 +1,6 @@
 import { Allow } from "class-validator";
 import OrganizationEntity from "../database/entity/organization";
+import SiteEntity from "../database/entity/site";
 import { Api } from "./zerto/zerto-sdk";
 
 const createBaseParams = () => ({
@@ -32,6 +33,8 @@ const createZertoClient = async (username: string, password: string) => {
 
 const companyOrganizationId = (vacCompanyId: string) => `zorg_${vacCompanyId}`;
 
+const zsiteSiteId = (zertoSiteId: string) => `zsite_${zertoSiteId}`;
+
 export default class ZertoStore {
     constructor() {
 
@@ -55,7 +58,29 @@ export default class ZertoStore {
             }
             org.title = zorg.name;
             await org.save();
+
+            const sites = await zerto.v2.monitoringSitesList({
+                zorgIdentifier: zorg.identifier,
+            });
+
+            for (const zsite of sites.data) {
+                const siteId = zsiteSiteId(zsite.identifier);
+                let site = await SiteEntity.findOne(siteId); // HACK: could be overriding organization site belongs to multiple zorgs
+                if (!site) {
+                    site = new SiteEntity()
+                    site.siteId = siteId;
+                    site.createdAt = new Date()
+                }
+                site.organization = org;
+                site.title = zsite.name;
+                site.zertoMeta = zsite;
+                await site.save();
+                console.log("site saved", site.title)
+            }
         }
+
+        const vms = await zerto.v2.monitoringProtectedVmsList()
+        // vms.data.vpgs[0].
 
         console.log("zerto store loaded")
     }

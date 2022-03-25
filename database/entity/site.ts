@@ -1,4 +1,6 @@
 import { Entity, Column, PrimaryColumn, BaseEntity, ManyToOne, JoinColumn, OneToMany } from "typeorm";
+import { OrganizationLocation } from "../../externalServices/vac/vac-sdk";
+import { SiteDetails } from "../../externalServices/zerto/zerto-sdk";
 import OrganizationEntity from "./organization";
 
 @Entity({ name: "sites" })
@@ -12,10 +14,13 @@ export default class SiteEntity extends BaseEntity {
     @Column({ name: "created_at" })
     createdAt: Date;
 
-    @Column({ name: "user_id" })
-    userId: string;
-
     @ManyToOne(() => OrganizationEntity, org => org.sites)
     @JoinColumn({ name: "organization_id" })
     organization: OrganizationEntity;
+
+    @Column({ type: 'simple-json', name: "zerto_meta", nullable: true })
+    zertoMeta?: SiteDetails;
+
+    @Column({ type: 'simple-json', name: "veeam_meta", nullable: true })
+    veeamMeta?: OrganizationLocation;
 }
