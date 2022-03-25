@@ -37,7 +37,22 @@ const companyOrganizationId = (vacCompanyId: string) => `zorg_${vacCompanyId}`;
 const zsiteSiteId = (zertoSiteId: string) => `zsite_${zertoSiteId}`;
 const vmsAssetId = (vmsId: string) => `zvms_${vmsId}`;
 
-const getVmsSiteVpg = (vms: Vms, zsiteName: string): ProtectedVpgs | undefined => vms.vpgs!.find(vpg => vpg.protectedSite.name === zsiteName)
+
+// info from swagger was incomplete
+export interface ExtProtectedVmsSite {
+    /** @example Boston */
+    name?: string;
+
+    /** @example vCenter */
+    type?: string;
+
+    /** @example Protected */
+    role?: string;
+
+    identifier?: string;
+}
+
+const getVmsSiteVpg = (vms: Vms, zsiteId: string): ProtectedVpgs | undefined => vms.vpgs!.find(vpg => (vpg.protectedSite as ExtProtectedVmsSite).identifier === zsiteId)
 
 
 const plannerSitesList = (c: HttpClient, query?: { zorgIdentifier?: string }, params: RequestParams = {}) =>
@@ -76,8 +91,6 @@ export default class ZertoStore {
             org.title = zorg.name;
             await org.save();
 
-            zerto.v2.monitoringSitesList()
-
             const sitesRes = await plannerSitesList(zerto, {
                 zorgIdentifier: zorg.identifier,
             });
@@ -107,7 +120,7 @@ export default class ZertoStore {
                 await site.save();
                 console.log("site saved", site.title)
                 for (const vms of vmsList) {
-                    const vpg = getVmsSiteVpg(vms, zsite.name);
+                    const vpg = getVmsSiteVpg(vms, zsite.identifier);
                     if (!vpg) {
                         continue
                     }
