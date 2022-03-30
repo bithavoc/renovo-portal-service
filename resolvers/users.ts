@@ -5,6 +5,8 @@ import { uuid } from 'uuidv4';
 import { hash } from 'bcrypt';
 import { Site } from "./sites";
 import { Protection } from "./protections";
+import AssetEntity from "../database/entity/Asset";
+import { Asset } from "./Assets";
 
 @ObjectType()
 export class User {
@@ -70,14 +72,16 @@ class UsersResolver {
   }
 
   // @FieldResolver()
-  // async sites(@Root() user: User) {
-  //   const u = await UserEntity.findOne({
-  //     where: {
-  //       userId: user.userId
-  //     },
-  //     relations: ["sites"]
-  //   });
-  //   return u.sites;
+  // async assets(@Root() user: User): Promise<Asset[]> {
+  //   // TODO: org membership filter, blocked by admin flag
+  //   return await AssetEntity.createQueryBuilder("asset").getMany()
+  //   // const u = await UserEntity.findOne({
+  //   //   where: {
+  //   //     userId: user.userId
+  //   //   },
+  //   //   relations: ["sites"]
+  //   // });
+  //   // return u.sites;
   // }
 }
 

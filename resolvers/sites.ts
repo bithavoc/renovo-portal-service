@@ -13,12 +13,6 @@ export class Site {
   title: string;
 
   @Field()
-  userId: string;
-
-  @Field()
-  user: User;
-
-  @Field()
   createdAt: Date;
 
   // @Field(() => [Patient])

@@ -37,7 +37,8 @@ export default class VacStore {
         this.allLocations = await loadAllResources(params => vac.organizations.getLocations({ ...params }));
         // this.allProtectedComputersByConsole = await loadAllResources(params => vac.protectedWorkloads.getProtectedComputersManagedByConsole({ ...params }));
         this.allProtectedVirtualMachines = await loadAllResources(params => vac.protectedWorkloads.getProtectedVirtualMachines({ ...params }));
-
+        // const backuPServers = await vac.infrastructure.getBackupServers()
+        // backuPServers.data.data[0].
         for (const company of this.allCompanies) {
             const orgId = companyOrganizationId(company.instanceUid);
             let org = await OrganizationEntity.findOne(orgId);

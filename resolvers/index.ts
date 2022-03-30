@@ -1,4 +1,5 @@
 import { NonEmptyArray } from "type-graphql";
+import AssetsResolver from "./Assets";
 import OrganizationMembersResolver from "./OrganizationMembers";
 import OrganizationsResolver from "./organizations";
 import ProtectedComputersResolver from "./protected_computers";
@@ -16,5 +17,6 @@ export const resolvers: NonEmptyArray<Function> | NonEmptyArray<string> = [
     ProtectedVirtualMachinesResolver,
     ProtectedComputersResolver,
     OrganizationsResolver,
-    OrganizationMembersResolver
+    OrganizationMembersResolver,
+    AssetsResolver,
 ]

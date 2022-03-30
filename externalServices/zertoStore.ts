@@ -125,7 +125,7 @@ export default class ZertoStore {
                         continue
                     }
                     const assetId = vmsAssetId(vms.identifier);
-                    let asset = await AssetEntity.findOne(assetId); // HACK: could be overriding vms site belongs to multiple zorgs
+                    let asset = await AssetEntity.findOne(assetId); // HACK: could be overriding vms site belongs to multiple site/zorgs
                     if (!asset) {
                         asset = new AssetEntity()
                         asset.assetId = assetId;
