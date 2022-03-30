@@ -1,19 +1,42 @@
-import { AuthenticationError, ForbiddenError } from "apollo-server";
-import { Arg, Ctx, Field, FieldResolver, ID, InputType, Mutation, ObjectType, Query, Resolver, Root } from "type-graphql";
-import { uuid } from "uuidv4";
+import { Field, ID, ObjectType, Query, Resolver } from "type-graphql";
 import AssetEntity from "../database/entity/Asset";
-import TokenEntity from "../database/entity/token";
-import UserEntity from "../database/entity/user";
 import { Organization } from "./organizations";
 import { Site } from "./sites";
 
 @ObjectType()
 export class ZertoAssetMeta {
-  @Field()
+  @Field({ nullable: true })
   provisionedStorageMb?: number;
 
-  @Field()
+  @Field({ nullable: true })
   usedStorageMb?: number;
+}
+
+@ObjectType()
+export class VeeamAssetVMMeta {
+  @Field({ nullable: true, description: 'Total size of protected virtual machine disks, in bytes' })
+  provisionedStorageMb?: number;
+
+  @Field({ nullable: true, description: 'Used space on protected virtual machine disks, in bytes' })
+  usedStorageMb?: number;
+
+  @Field({ nullable: true, description: 'Total size of all restore points, in bytes' })
+  totalRestorePointSize?: number;
+
+  @Field({ nullable: true, description: 'Size of the latest restore point, in bytes' })
+  latestRestorePointSize?: number;
+
+  @Field({ nullable: true, description: 'Number of restore points' })
+  restorePoints?: number;
+
+  @Field({ nullable: true, description: 'Time and date of the latest restore point creation' })
+  latestRestorePointDate?: string;
+}
+
+@ObjectType()
+export class VeeamAssetMeta {
+  @Field({ nullable: true })
+  vm?: VeeamAssetVMMeta;
 }
 
 @ObjectType()
@@ -33,8 +56,11 @@ export class Asset {
   @Field()
   createdAt: Date;
 
-  @Field()
+  @Field({ nullable: true })
   zertoMeta?: ZertoAssetMeta
+
+  @Field({ nullable: true })
+  veeamMeta?: VeeamAssetMeta
 }
 
 @Resolver(Asset)
