@@ -18,4 +18,8 @@ async function run() {
   console.log("importer finished")
 }
 
-run();
+run().then(() => console.log("importer finished ok")).catch(e => {
+  console.error("importer failed", e);
+  process.exit(1);
+});
+
