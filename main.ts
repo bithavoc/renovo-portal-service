@@ -75,4 +75,7 @@ async function bootstrap() {
   })
 }
 
-bootstrap();
+bootstrap().then(() => console.log("entrypoint finished ok")).catch(e => {
+  console.error("entrypoint failed", e);
+  process.exit(1);
+});
