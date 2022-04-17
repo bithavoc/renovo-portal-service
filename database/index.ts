@@ -2,9 +2,10 @@
 import { createConnection } from "typeorm";
 import AssetEntity from "./entity/Asset";
 import AssetSiteEntity from "./entity/AssetSite";
-import OrganizationEntity from "./entity/organization";
+import OrganizationEntity from "./entity/Organization";
 import OrganizationMemberEntity from "./entity/OrganizationMember";
-import SiteEntity from "./entity/site";
+import SiteEntity from "./entity/Site";
+import SiteOrganizationEntity from "./entity/SiteOrganization";
 import TokenEntity from "./entity/token";
 import UserEntity from "./entity/user";
 import { CreateUser1630703672513 } from "./migration/1630703672513-CreateUser";
@@ -22,6 +23,9 @@ import { AddMetasToSites1648181663953 } from "./migration/1648181663953-AddMetas
 import { CreateAssetsTable1648185874871 } from "./migration/1648185874871-CreateAssetsTable";
 import { CreateAssetSiteTable1650165891862 } from "./migration/1650165891862-CreateAssetSiteTable";
 import { DropAssetSiteColumn1650166677138 } from "./migration/1650166677138-DropAssetSiteColumn";
+import { CreateSiteOrganizationTable1650209011918 } from "./migration/1650209011918-CreateSiteOrganizationTable";
+import { DropSiteOrganizationColumn1650209640070 } from "./migration/1650209640070-DropSiteOrganizationColumn";
+import { DropAssetSiteOrganization1650209905453 } from "./migration/1650209905453-DropAssetSiteOrganization";
 
 export const initDatabase = () => createConnection({
     "type": "postgres",
@@ -37,6 +41,7 @@ export const initDatabase = () => createConnection({
         OrganizationMemberEntity,
         AssetEntity,
         AssetSiteEntity,
+        SiteOrganizationEntity,
     ],
     "migrations": [
         CreateUser1630703672513,
@@ -54,5 +59,8 @@ export const initDatabase = () => createConnection({
         CreateAssetsTable1648185874871,
         CreateAssetSiteTable1650165891862,
         DropAssetSiteColumn1650166677138,
+        CreateSiteOrganizationTable1650209011918,
+        DropSiteOrganizationColumn1650209640070,
+        DropAssetSiteOrganization1650209905453,
     ]
 });

@@ -1,6 +1,6 @@
 import { Field, FieldResolver, ObjectType, Resolver, Root } from "type-graphql";
 import AssetSiteEntity from "../database/entity/AssetSite";
-import SiteEntity from "../database/entity/site";
+import SiteEntity from "../database/entity/Site";
 import { Site } from "./sites";
 
 @ObjectType()

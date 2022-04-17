@@ -1,8 +1,9 @@
-import { Allow } from "class-validator";
+import { uuid } from "uuidv4";
 import AssetEntity from "../database/entity/Asset";
 import AssetSiteEntity from "../database/entity/AssetSite";
-import OrganizationEntity from "../database/entity/organization";
-import SiteEntity from "../database/entity/site";
+import OrganizationEntity from "../database/entity/Organization";
+import SiteEntity from "../database/entity/Site";
+import SiteOrganizationEntity from "../database/entity/SiteOrganization";
 import { Api, BackupServerJob, Company, ErrorResponse, HttpResponse, OrganizationLocation, ProtectedComputerManagedByBackupServer, ProtectedComputerManagedByConsole, ProtectedVirtualMachine, ProtectedVirtualMachineBackupRestorePoint, ResponseError, ResponseMetadata } from "./vac/vac-sdk";
 
 const createVeamClient = (token: string) => new Api({
@@ -50,6 +51,7 @@ export default class VacStore {
             }
             org.title = company.name;
             await org.save();
+            const organizationId = org.id;
 
             console.log("all locations", this.allLocations.length);
             for (const loc of this.allLocations) {
@@ -60,14 +62,30 @@ export default class VacStore {
                 let site = await SiteEntity.findOne(siteId);
                 if (!site) {
                     site = new SiteEntity()
-                    site.siteId = siteId;
                     site.createdAt = new Date()
                 }
-                site.organization = org;
+                site.siteId = siteId;
+                // site.organization = org;
                 site.title = loc.name;
                 site.veeamMeta = loc;
                 await site.save();
                 console.log("site saved", site.title)
+
+                let siteOrg = await SiteOrganizationEntity.createQueryBuilder('so').where({
+                    siteId,
+                    organizationId,
+                }).getOne();
+                console.log('site org', siteOrg)
+                if (!siteOrg) {
+                    siteOrg = new SiteOrganizationEntity();
+                    console.log('creating new site org')
+                    siteOrg.siteOrganizationId = uuid();
+                    siteOrg.createdAt = new Date();
+                }
+                siteOrg.organizationId = organizationId;
+                siteOrg.siteId = siteId;
+                await siteOrg.save();
+
 
                 for (const pvm of this.allProtectedVirtualMachines) {
                     if (pvm.organizationUid !== loc.organizationUid) {
@@ -81,7 +99,7 @@ export default class VacStore {
                         asset.createdAt = new Date()
                     }
                     // asset.site = site;
-                    asset.organization = org;
+                    // asset.organization = org;
                     asset.title = pvm.name;
                     asset.veeamMeta = {
                         vm: pvm,
@@ -99,7 +117,7 @@ export default class VacStore {
                     }
                     assetSite.siteId = siteId;
                     assetSite.assetId = assetId;
-                    assetSite.organization = org;
+                    // assetSite.organization = org;
                     await assetSite.save();
 
                     console.log("asset site saved", assetSite.assetId, assetSite.siteId);

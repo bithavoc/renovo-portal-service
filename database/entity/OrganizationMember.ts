@@ -1,5 +1,5 @@
 import { Entity, Column, PrimaryColumn, BaseEntity, ManyToOne, JoinColumn, OneToMany } from "typeorm";
-import OrganizationEntity from "./organization";
+import OrganizationEntity from "./Organization";
 import UserEntity from "./user";
 
 @Entity({ name: "organization_members" })

@@ -1,7 +1,6 @@
 import { Field, ID, ObjectType, Query, Resolver } from "type-graphql";
 import AssetEntity from "../database/entity/Asset";
 import { AssetSite } from "./AssetSites";
-import { Organization } from "./organizations";
 
 @ObjectType()
 export class ZertoAssetMeta {
@@ -46,9 +45,6 @@ export class Asset {
 
   @Field()
   title: string;
-
-  @Field(() => Asset)
-  organization: Organization;
 
   @Field(() => [AssetSite])
   sites: AssetSite[];

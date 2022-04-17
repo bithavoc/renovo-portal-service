@@ -1,10 +1,9 @@
-import { AuthenticationError } from "apollo-server";
-import { Arg, Ctx, Field, FieldResolver, ID, InputType, Mutation, ObjectType, Query, Resolver, Root } from "type-graphql";
-import TokenEntity from "../database/entity/token";
-import { User } from "./users";
-import SiteEntity from "../database/entity/site";
+import { Field, FieldResolver, ID, ObjectType, Resolver, ResolverInterface, Root } from "type-graphql";
+import SiteEntity from "../database/entity/Site";
+import OrganizationEntity from "../database/entity/Organization";
+import { SiteOrganization } from "./SiteOrganizations";
 import { Organization } from "./organizations";
-import OrganizationEntity from "../database/entity/organization";
+import SiteOrganizationEntity from "../database/entity/SiteOrganization";
 
 @ObjectType()
 export class Site {
@@ -17,15 +16,17 @@ export class Site {
   @Field()
   createdAt: Date;
 
-  @Field(() => Organization)
-  organization: Organization;
+  @Field(() => [SiteOrganization])
+  organizations: SiteOrganization[];
 }
 
 @Resolver(Site)
-class SitesResolver {
+class SitesResolver implements ResolverInterface<Site> {
   @FieldResolver()
-  async organization(@Root() site: SiteEntity) {
-    return await OrganizationEntity.findOne(site.organizationId);
+  async organizations(@Root() site: SiteEntity) {
+    return await SiteOrganizationEntity.createQueryBuilder('so').where({
+      siteId: site.siteId
+    }).getMany();
   }
 }
 

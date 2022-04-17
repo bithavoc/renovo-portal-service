@@ -1,6 +1,6 @@
 import { Entity, Column, PrimaryColumn, BaseEntity, OneToMany } from "typeorm";
 import OrganizationMemberEntity from "./OrganizationMember";
-import SiteEntity from "./site";
+import SiteEntity from "./Site";
 import TokenEntity from "./token";
 
 @Entity({ name: "users" })

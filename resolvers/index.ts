@@ -6,6 +6,7 @@ import OrganizationsResolver from "./organizations";
 import ProtectedComputersResolver from "./protected_computers";
 import ProtectedVirtualMachinesResolver from "./protected_virtual_machines";
 import ProtectionsResolver from "./protections";
+import SiteOrganizationsResolver from "./SiteOrganizations";
 import SitesResolver from "./sites";
 import TokensResolver from "./tokens";
 import UsersResolver from "./users";
@@ -20,5 +21,6 @@ export const resolvers: NonEmptyArray<Function> | NonEmptyArray<string> = [
     OrganizationsResolver,
     OrganizationMembersResolver,
     AssetsResolver,
-    AssetSitesResolver
+    AssetSitesResolver,
+    SiteOrganizationsResolver
 ]

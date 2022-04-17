@@ -3,7 +3,8 @@ import { OrganizationLocation } from "../../externalServices/vac/vac-sdk";
 import { SiteDetails } from "../../externalServices/zerto/zerto-sdk";
 import AssetEntity from "./Asset";
 import AssetSiteEntity from "./AssetSite";
-import OrganizationEntity from "./organization";
+import OrganizationEntity from "./Organization";
+import SiteOrganizationEntity from "./SiteOrganization";
 
 @Entity({ name: "sites" })
 export default class SiteEntity extends BaseEntity {
@@ -16,13 +17,6 @@ export default class SiteEntity extends BaseEntity {
     @Column({ name: "created_at" })
     createdAt: Date;
 
-    @Column({ name: 'organization_id' })
-    organizationId: string;
-
-    @ManyToOne(() => OrganizationEntity, org => org.sites)
-    @JoinColumn({ name: "organization_id" })
-    organization: OrganizationEntity;
-
     @Column({ type: 'simple-json', name: "zerto_meta", nullable: true })
     zertoMeta?: SiteDetails;
 
@@ -31,4 +25,7 @@ export default class SiteEntity extends BaseEntity {
 
     @OneToMany(type => AssetSiteEntity, assetSite => assetSite.site)
     assets: AssetSiteEntity[];
+
+    @OneToMany(type => SiteOrganizationEntity, siteOrg => siteOrg.site)
+    organizations: SiteOrganizationEntity[];
 }

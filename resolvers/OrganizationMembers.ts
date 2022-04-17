@@ -1,7 +1,7 @@
 import { AuthenticationError, ForbiddenError } from "apollo-server";
 import { Arg, Ctx, Field, FieldResolver, ID, InputType, Mutation, ObjectType, Query, Resolver, Root } from "type-graphql";
 import { uuid } from "uuidv4";
-import OrganizationEntity from "../database/entity/organization";
+import OrganizationEntity from "../database/entity/Organization";
 import OrganizationMemberEntity from "../database/entity/OrganizationMember";
 import TokenEntity from "../database/entity/token";
 import UserEntity from "../database/entity/user";

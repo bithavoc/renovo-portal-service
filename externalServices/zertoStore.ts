@@ -1,8 +1,10 @@
 import { Allow } from "class-validator";
+import { uuid } from "uuidv4";
 import AssetEntity from "../database/entity/Asset";
 import AssetSiteEntity from "../database/entity/AssetSite";
-import OrganizationEntity from "../database/entity/organization";
-import SiteEntity from "../database/entity/site";
+import OrganizationEntity from "../database/entity/Organization";
+import SiteEntity from "../database/entity/Site";
+import SiteOrganizationEntity from "../database/entity/SiteOrganization";
 import { Api, HttpClient, ProtectedVpgs, RequestParams, SiteDetails, Vms } from "./zerto/zerto-sdk";
 
 const createBaseParams = () => ({
@@ -91,6 +93,7 @@ export default class ZertoStore {
             }
             org.title = zorg.name;
             await org.save();
+            const organizationId = org.id;
 
             const sitesRes = await plannerSitesList(zerto, {
                 zorgIdentifier: zorg.identifier,
@@ -115,11 +118,25 @@ export default class ZertoStore {
                     site.siteId = siteId;
                     site.createdAt = new Date()
                 }
-                site.organization = org;
+                // site.organization = org;
                 site.title = zsite.name;
                 site.zertoMeta = zsite;
                 await site.save();
                 console.log("site saved", site.title)
+
+                let siteOrg = await SiteOrganizationEntity.createQueryBuilder('so').where({
+                    siteId,
+                    organizationId,
+                }).getOne();
+                if (!siteOrg) {
+                    siteOrg = new SiteOrganizationEntity();
+                    siteOrg.siteOrganizationId = uuid();
+                    siteOrg.createdAt = new Date();
+                }
+                siteOrg.organizationId = organizationId;
+                siteOrg.siteId = siteId;
+                await siteOrg.save();
+
                 for (const vms of vmsList) {
                     const vpg = getVmsSiteVpg(vms, zsite.identifier);
                     if (!vpg) {
@@ -133,7 +150,7 @@ export default class ZertoStore {
                         asset.createdAt = new Date()
                     }
                     // asset.site = site;
-                    asset.organization = org;
+                    // asset.organization = org;
                     asset.title = vms.name;
                     asset.zertoMeta = vms;
                     await asset.save();
@@ -149,7 +166,7 @@ export default class ZertoStore {
                     }
                     assetSite.siteId = siteId;
                     assetSite.assetId = assetId;
-                    assetSite.organization = org;
+                    // assetSite.organization = org;
                     await assetSite.save();
 
                     console.log("asset site saved", assetSite.assetId, assetSite.siteId);

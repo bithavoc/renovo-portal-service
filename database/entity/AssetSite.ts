@@ -1,7 +1,7 @@
 import { Entity, PrimaryColumn, BaseEntity, ManyToOne, JoinColumn, Column } from "typeorm";
 import AssetEntity from "./Asset";
-import OrganizationEntity from "./organization";
-import SiteEntity from "./site";
+import OrganizationEntity from "./Organization";
+import SiteEntity from "./Site";
 
 @Entity({ name: "asset_sites" })
 export default class AssetSiteEntity extends BaseEntity {
@@ -11,15 +11,15 @@ export default class AssetSiteEntity extends BaseEntity {
     @PrimaryColumn({ name: "site_id" })
     siteId: string;
 
-    @Column({ name: "organization_id" })
-    organizationId: string;
+    // @Column({ name: "organization_id" })
+    // organizationId: string;
 
     @Column({ name: "created_at" })
     createdAt: Date;
 
-    @ManyToOne(() => OrganizationEntity, org => org.assetSites)
-    @JoinColumn({ name: "organization_id" })
-    organization: OrganizationEntity;
+    // @ManyToOne(() => OrganizationEntity, org => org.assetSites)
+    // @JoinColumn({ name: "organization_id" })
+    // organization: OrganizationEntity;
 
     @ManyToOne(() => AssetEntity, asset => asset.sites)
     @JoinColumn({ name: "asset_id" })
