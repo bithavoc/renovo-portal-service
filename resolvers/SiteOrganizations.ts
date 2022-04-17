@@ -9,6 +9,9 @@ import { Site } from "./sites";
 @ObjectType()
 export class SiteOrganization {
   @Field()
+  siteOrganizationId: string;
+
+  @Field()
   siteId: string;
 
   @Field()

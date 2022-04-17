@@ -37,7 +37,7 @@ class TokensResolver {
     @Ctx("token") token?: TokenEntity
   ): Promise<Token> {
     if (!token) {
-      throw new Error("access denied")
+      throw new AuthenticationError("access denied")
     }
     return token
   }
