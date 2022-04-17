@@ -16,6 +16,9 @@ export default class SiteEntity extends BaseEntity {
     @Column({ name: "created_at" })
     createdAt: Date;
 
+    @Column({ name: 'organization_id' })
+    organizationId: string;
+
     @ManyToOne(() => OrganizationEntity, org => org.sites)
     @JoinColumn({ name: "organization_id" })
     organization: OrganizationEntity;

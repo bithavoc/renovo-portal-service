@@ -1,7 +1,7 @@
 import { Field, ID, ObjectType, Query, Resolver } from "type-graphql";
 import AssetEntity from "../database/entity/Asset";
+import { AssetSite } from "./AssetSites";
 import { Organization } from "./organizations";
-import { Site } from "./sites";
 
 @ObjectType()
 export class ZertoAssetMeta {
@@ -50,8 +50,8 @@ export class Asset {
   @Field(() => Asset)
   organization: Organization;
 
-  @Field(() => Asset)
-  site: Site;
+  @Field(() => [AssetSite])
+  sites: AssetSite[];
 
   @Field()
   createdAt: Date;
@@ -69,7 +69,7 @@ class AssetsResolver {
   async getAssets(
     // @Arg("siteId") siteId: string,
   ): Promise<Asset[]> {
-    return await AssetEntity.createQueryBuilder("asset").getMany()
+    return await AssetEntity.createQueryBuilder("asset").leftJoinAndSelect('asset.sites', 'sites').getMany()
   }
 }
 
