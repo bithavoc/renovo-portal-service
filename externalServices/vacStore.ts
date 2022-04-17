@@ -1,5 +1,6 @@
 import { Allow } from "class-validator";
 import AssetEntity from "../database/entity/Asset";
+import AssetSiteEntity from "../database/entity/AssetSite";
 import OrganizationEntity from "../database/entity/organization";
 import SiteEntity from "../database/entity/site";
 import { Api, BackupServerJob, Company, ErrorResponse, HttpResponse, OrganizationLocation, ProtectedComputerManagedByBackupServer, ProtectedComputerManagedByConsole, ProtectedVirtualMachine, ProtectedVirtualMachineBackupRestorePoint, ResponseError, ResponseMetadata } from "./vac/vac-sdk";
@@ -79,7 +80,7 @@ export default class VacStore {
                         asset.assetId = assetId;
                         asset.createdAt = new Date()
                     }
-                    asset.site = site;
+                    // asset.site = site;
                     asset.organization = org;
                     asset.title = pvm.name;
                     asset.veeamMeta = {
@@ -87,6 +88,21 @@ export default class VacStore {
                     };
                     await asset.save();
                     console.log("asset saved", asset.title)
+
+                    let assetSite = await AssetSiteEntity.findOne({
+                        siteId: siteId,
+                        assetId: assetId,
+                    });
+                    if (!assetSite) {
+                        assetSite = new AssetSiteEntity()
+                        assetSite.createdAt = new Date()
+                    }
+                    assetSite.siteId = siteId;
+                    assetSite.assetId = assetId;
+                    assetSite.organization = org;
+                    await assetSite.save();
+
+                    console.log("asset site saved", assetSite.assetId, assetSite.siteId);
                 }
             }
         }

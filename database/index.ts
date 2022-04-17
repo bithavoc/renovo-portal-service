@@ -1,6 +1,7 @@
 
 import { createConnection } from "typeorm";
 import AssetEntity from "./entity/Asset";
+import AssetSiteEntity from "./entity/AssetSite";
 import OrganizationEntity from "./entity/organization";
 import OrganizationMemberEntity from "./entity/OrganizationMember";
 import SiteEntity from "./entity/site";
@@ -19,6 +20,8 @@ import { OrgMemberUnique1648170087959 } from "./migration/1648170087959-OrgMembe
 import { ChangeSiteOrganization1648181269738 } from "./migration/1648181269738-ChangeSiteOrganization";
 import { AddMetasToSites1648181663953 } from "./migration/1648181663953-AddMetasToSites";
 import { CreateAssetsTable1648185874871 } from "./migration/1648185874871-CreateAssetsTable";
+import { CreateAssetSiteTable1650165891862 } from "./migration/1650165891862-CreateAssetSiteTable";
+import { DropAssetSiteColumn1650166677138 } from "./migration/1650166677138-DropAssetSiteColumn";
 
 export const initDatabase = () => createConnection({
     "type": "postgres",
@@ -33,6 +36,7 @@ export const initDatabase = () => createConnection({
         OrganizationEntity,
         OrganizationMemberEntity,
         AssetEntity,
+        AssetSiteEntity,
     ],
     "migrations": [
         CreateUser1630703672513,
@@ -48,5 +52,7 @@ export const initDatabase = () => createConnection({
         ChangeSiteOrganization1648181269738,
         AddMetasToSites1648181663953,
         CreateAssetsTable1648185874871,
+        CreateAssetSiteTable1650165891862,
+        DropAssetSiteColumn1650166677138,
     ]
 });

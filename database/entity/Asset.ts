@@ -1,6 +1,7 @@
 import { Entity, Column, PrimaryColumn, BaseEntity, ManyToOne, JoinColumn, OneToMany } from "typeorm";
 import { OrganizationLocation, ProtectedVirtualMachine } from "../../externalServices/vac/vac-sdk";
 import { SiteDetails, Vms } from "../../externalServices/zerto/zerto-sdk";
+import AssetSiteEntity from "./AssetSite";
 import OrganizationEntity from "./organization";
 import SiteEntity from "./site";
 
@@ -15,10 +16,6 @@ export default class AssetEntity extends BaseEntity {
     @Column({ name: "created_at" })
     createdAt: Date;
 
-    @ManyToOne(() => SiteEntity, site => site.assets)
-    @JoinColumn({ name: "site_id" })
-    site: SiteEntity;
-
     @ManyToOne(() => OrganizationEntity, org => org.assets)
     @JoinColumn({ name: "organization_id" })
     organization: OrganizationEntity;
@@ -30,4 +27,7 @@ export default class AssetEntity extends BaseEntity {
     veeamMeta?: {
         vm?: ProtectedVirtualMachine
     };
+
+    @OneToMany(type => AssetSiteEntity, assetSite => assetSite.asset)
+    sites: AssetSiteEntity[];
 }

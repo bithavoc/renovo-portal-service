@@ -1,5 +1,6 @@
 import { Allow } from "class-validator";
 import AssetEntity from "../database/entity/Asset";
+import AssetSiteEntity from "../database/entity/AssetSite";
 import OrganizationEntity from "../database/entity/organization";
 import SiteEntity from "../database/entity/site";
 import { Api, HttpClient, ProtectedVpgs, RequestParams, SiteDetails, Vms } from "./zerto/zerto-sdk";
@@ -125,18 +126,33 @@ export default class ZertoStore {
                         continue
                     }
                     const assetId = vmsAssetId(vms.identifier);
-                    let asset = await AssetEntity.findOne(assetId); // HACK: could be overriding vms site belongs to multiple site/zorgs
+                    let asset = await AssetEntity.findOne(assetId);
                     if (!asset) {
                         asset = new AssetEntity()
                         asset.assetId = assetId;
                         asset.createdAt = new Date()
                     }
-                    asset.site = site;
+                    // asset.site = site;
                     asset.organization = org;
                     asset.title = vms.name;
                     asset.zertoMeta = vms;
                     await asset.save();
                     console.log("asset saved", asset.title)
+
+                    let assetSite = await AssetSiteEntity.findOne({
+                        siteId: siteId,
+                        assetId: assetId,
+                    });
+                    if (!assetSite) {
+                        assetSite = new AssetSiteEntity()
+                        assetSite.createdAt = new Date()
+                    }
+                    assetSite.siteId = siteId;
+                    assetSite.assetId = assetId;
+                    assetSite.organization = org;
+                    await assetSite.save();
+
+                    console.log("asset site saved", assetSite.assetId, assetSite.siteId);
                 }
             }
         }
