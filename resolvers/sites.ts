@@ -6,6 +6,34 @@ import { Organization } from "./organizations";
 import SiteOrganizationEntity from "../database/entity/SiteOrganization";
 
 @ObjectType()
+export class SiteVeeamMeta {
+  @Field({
+    description: 'UID assigned to a location in Veeam Service Provider Console'
+  })
+  instanceUid?: string;
+
+  @Field({
+    description: 'UID assigned to an organization'
+  })
+  organizationUid?: string;
+
+  @Field({
+    description: 'Name of a location'
+  })
+  name: string;
+
+  @Field({
+    description: 'Amount of storage space allocated to a location, in gigabytes'
+  })
+  quotaGb: number;
+
+  @Field({
+    description: 'Indicates whether a location is default'
+  })
+  isDefault?: boolean;
+}
+
+@ObjectType()
 export class Site {
   @Field(type => ID)
   siteId: string;
@@ -18,6 +46,11 @@ export class Site {
 
   @Field(() => [SiteOrganization])
   organizations: SiteOrganization[];
+
+  @Field({
+    nullable: true
+  })
+  veeamMeta?: SiteVeeamMeta;
 }
 
 @Resolver(Site)
