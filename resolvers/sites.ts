@@ -1,4 +1,4 @@
-import { Field, FieldResolver, ID, ObjectType, Resolver, ResolverInterface, Root } from "type-graphql";
+import { Field, FieldResolver, ID, ObjectType, Query, Resolver, ResolverInterface, Root } from "type-graphql";
 import SiteEntity from "../database/entity/Site";
 import OrganizationEntity from "../database/entity/Organization";
 import { SiteOrganization } from "./SiteOrganizations";
@@ -27,6 +27,11 @@ class SitesResolver implements ResolverInterface<Site> {
     return await SiteOrganizationEntity.createQueryBuilder('so').where({
       siteId: site.siteId
     }).getMany();
+  }
+
+  @Query(returns => [Site])
+  async getSites(): Promise<Site[]> {
+    return await SiteEntity.createQueryBuilder("site").leftJoinAndSelect('site.organizations', 'orgs').getMany()
   }
 }
 

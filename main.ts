@@ -6,7 +6,6 @@ import { initDatabase } from "./database";
 import { resolvers } from "./resolvers";
 import express = require("express");
 import TokenEntity from "./database/entity/token";
-import VacStore from "./externalServices/vacStore";
 config();
 
 const PORT = process.env.PORT || 4000;
