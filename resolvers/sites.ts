@@ -8,12 +8,14 @@ import SiteOrganizationEntity from "../database/entity/SiteOrganization";
 @ObjectType()
 export class SiteVeeamMeta {
   @Field({
-    description: 'UID assigned to a location in Veeam Service Provider Console'
+    description: 'UID assigned to a location in Veeam Service Provider Console',
+    nullable: true,
   })
   instanceUid?: string;
 
   @Field({
-    description: 'UID assigned to an organization'
+    description: 'UID assigned to an organization',
+    nullable: true,
   })
   organizationUid?: string;
 
@@ -28,9 +30,53 @@ export class SiteVeeamMeta {
   quotaGb: number;
 
   @Field({
-    description: 'Indicates whether a location is default'
+    description: 'Indicates whether a location is default',
+    nullable: true,
   })
   isDefault?: boolean;
+}
+
+@ObjectType()
+export class SiteZertoMeta {
+  @Field({
+    description: 'The ID of this Zerto site',
+    nullable: true,
+  })
+  identifier?: string;
+
+  @Field({
+    nullable: true
+  })
+  name?: string;
+
+  @Field({
+    description: 'The type of site',
+    nullable: true,
+  })
+  type?: string;
+
+  @Field({
+    description: 'The local IP of the ZVM',
+    nullable: true,
+  })
+  zvmpIp?: string;
+
+  @Field({
+    description: 'The connection status of the site to the Zerto Analytics service',
+    nullable: true,
+  })
+  connectionStatus?: string;
+
+  @Field({
+    description: 'whether the ZVM is enabled to send data to Zerto Analytics service',
+    nullable: true,
+  })
+  isTransmissionEnabled?: boolean;
+
+  @Field({
+    nullable: true,
+  })
+  isConnected?: boolean;
 }
 
 @ObjectType()
@@ -51,6 +97,11 @@ export class Site {
     nullable: true
   })
   veeamMeta?: SiteVeeamMeta;
+
+  @Field({
+    nullable: true
+  })
+  zertoMeta?: SiteZertoMeta;
 }
 
 @Resolver(Site)
