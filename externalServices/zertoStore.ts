@@ -3,6 +3,7 @@ import { uuid } from "uuidv4";
 import AssetEntity from "../database/entity/Asset";
 import AssetSiteEntity from "../database/entity/AssetSite";
 import OrganizationEntity from "../database/entity/Organization";
+import ProtectionEntity from "../database/entity/Protection";
 import SiteEntity from "../database/entity/Site";
 import SiteOrganizationEntity from "../database/entity/SiteOrganization";
 import { Api, HttpClient, ProtectedVpgs, RequestParams, SiteDetails, Vms } from "./zerto/zerto-sdk";
@@ -39,6 +40,7 @@ const companyOrganizationId = (vacCompanyId: string) => `zorg_${vacCompanyId}`;
 
 const zsiteSiteId = (zertoSiteId: string) => `zsite_${zertoSiteId}`;
 const vmsAssetId = (vmsId: string) => `zvms_${vmsId}`;
+const vpgProtectionId = (vpgId: string) => `zvpg_${vpgId}`;
 
 
 // info from swagger was incomplete
@@ -105,6 +107,31 @@ export default class ZertoStore {
             //     zorgIdentifier: zorg.identifier,
             // })
 
+
+            const vpgsList = await zerto.v2.monitoringVpgsList({
+                zorgIdentifier: zorg.identifier
+            })
+
+            for (const vpg of vpgsList.data.vpgs) {
+                const protectionId = vpgProtectionId(vpg.identifier);
+                let protection = await ProtectionEntity.findOne(protectionId);
+                if (!protection) {
+                    protection = new ProtectionEntity()
+                    protection.protectionId = protectionId;
+                    protection.createdAt = new Date()
+                }
+                protection.title = vpg.name;
+                protection.zertoMeta = vpg;
+                await protection.save();
+                console.log("vpg saved", protection.title)
+            }
+
+            // console.log("vpgs count", vpgsList.data.vpgs.length);
+
+            // for (const vpg of vpgsList.data.vpgs) {
+            //     console.log("vpg item", vpg.name)
+            // }
+
             const vmsRes = await zerto.v2.monitoringProtectedVmsList()
 
             const vmsList = vmsRes.data as Vms[];
@@ -138,6 +165,7 @@ export default class ZertoStore {
                 await siteOrg.save();
 
                 for (const vms of vmsList) {
+
                     const vpg = getVmsSiteVpg(vms, zsite.identifier);
                     if (!vpg) {
                         continue
