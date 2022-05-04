@@ -30,6 +30,7 @@ import { DropSiteOrganizationColumn1650209640070 } from "./migration/16502096400
 import { DropAssetSiteOrganization1650209905453 } from "./migration/1650209905453-DropAssetSiteOrganization";
 import { CreateProtectionsTable1651489422541 } from "./migration/1651489422541-CreateProtectionsTable";
 import { CreateProtectionSitesTable1651692586049 } from "./migration/1651692586049-CreateProtectionSitesTable";
+import { AddPurposeToProtectionSites1651694445319 } from "./migration/1651694445319-AddPurposeToProtectionSites";
 
 export const initDatabase = () => createConnection({
     "type": "postgres",
@@ -70,5 +71,6 @@ export const initDatabase = () => createConnection({
         DropAssetSiteOrganization1650209905453,
         CreateProtectionsTable1651489422541,
         CreateProtectionSitesTable1651692586049,
+        AddPurposeToProtectionSites1651694445319,
     ]
 });

@@ -1,10 +1,9 @@
-import { Allow } from "class-validator";
 import { uuid } from "uuidv4";
 import AssetEntity from "../database/entity/Asset";
 import AssetSiteEntity from "../database/entity/AssetSite";
 import OrganizationEntity from "../database/entity/Organization";
 import ProtectionEntity from "../database/entity/Protection";
-import ProtectionSiteEntity from "../database/entity/ProtectionSite";
+import ProtectionSiteEntity, { Purpose } from "../database/entity/ProtectionSite";
 import SiteEntity from "../database/entity/Site";
 import SiteOrganizationEntity from "../database/entity/SiteOrganization";
 import { Api, HttpClient, ProtectedVpgs, RequestParams, SiteDetails, Vms } from "./zerto/zerto-sdk";
@@ -43,11 +42,26 @@ const zsiteSiteId = (zertoSiteId: string) => `zsite_${zertoSiteId}`;
 const vmsAssetId = (vmsId: string) => `zvms_${vmsId}`;
 const vpgProtectionId = (vpgId: string) => `zvpg_${vpgId}`;
 
+type VPGSite = {
+    site: ExtProtectedVmsSite;
+    purpose: Purpose;
+}
+
 const getVPGSites = (vpg: ProtectedVpgs) => {
-    const protectedSite = vpg.protectedSite as ExtProtectedVmsSite;
-    const recoverySite = vpg.recoverySite as ExtProtectedVmsSite;
-    const allSites = [protectedSite, recoverySite].filter(Boolean);
-    return allSites;
+    const sites: VPGSite[] = [];
+    if (vpg.protectedSite) {
+        sites.push({
+            site: vpg.protectedSite as ExtProtectedVmsSite,
+            purpose: 'protection',
+        });
+    }
+    if (vpg.recoverySite) {
+        sites.push({
+            site: vpg.recoverySite as ExtProtectedVmsSite,
+            purpose: 'recovery',
+        });
+    }
+    return sites;
 };
 
 
@@ -175,7 +189,7 @@ export default class ZertoStore {
             const allSites = getVPGSites(vpg);
 
             for (const zsite of allSites) {
-                const siteId = zsiteSiteId(zsite.identifier);
+                const siteId = zsiteSiteId(zsite.site.identifier);
                 let protectionSite = await ProtectionSiteEntity.findOne({
                     protectionId: protectionId,
                     siteId,
@@ -186,6 +200,7 @@ export default class ZertoStore {
                 }
                 protectionSite.siteId = siteId;
                 protectionSite.protectionId = protectionId;
+                protectionSite.purpose = zsite.purpose;
                 // assetSite.organization = org;
                 await protectionSite.save();
 
@@ -227,7 +242,7 @@ export default class ZertoStore {
 
                 for (const zsite of allSites) {
                     console.log("saving vpg site for site", vpg.name, zsite);
-                    const siteId = zsiteSiteId(zsite.identifier);
+                    const siteId = zsiteSiteId(zsite.site.identifier);
                     let assetSite = await AssetSiteEntity.findOne({
                         siteId: siteId,
                         assetId: assetId,

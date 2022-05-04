@@ -1,5 +1,6 @@
 import { Field, FieldResolver, ObjectType, Resolver, Root } from "type-graphql";
 import AssetSiteEntity from "../database/entity/AssetSite";
+import { Purpose } from "../database/entity/ProtectionSite";
 import SiteEntity from "../database/entity/Site";
 import { Site } from "./sites";
 
@@ -10,6 +11,9 @@ export class ProtectionSite {
 
   @Field()
   createdAt: Date;
+
+  @Field()
+  purpose: Purpose;
 }
 
 @Resolver(ProtectionSite)

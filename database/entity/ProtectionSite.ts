@@ -2,6 +2,14 @@ import { Entity, PrimaryColumn, BaseEntity, ManyToOne, JoinColumn, Column } from
 import ProtectionEntity from "./Protection";
 import SiteEntity from "./Site";
 
+export enum UserRole {
+    ADMIN = "admin",
+    EDITOR = "editor",
+    GHOST = "ghost",
+}
+
+export type Purpose = "protection" | "recovery";
+
 @Entity({ name: "protection_sites" })
 export default class ProtectionSiteEntity extends BaseEntity {
     @PrimaryColumn({ name: "protection_id" })
@@ -20,4 +28,11 @@ export default class ProtectionSiteEntity extends BaseEntity {
     @ManyToOne(() => SiteEntity, site => site.protections)
     @JoinColumn({ name: "site_id" })
     site: SiteEntity;
+
+    @Column({
+        type: "enum",
+        enum: ["protection", "recovery"],
+        default: "protection"
+    })
+    purpose: Purpose;
 }
