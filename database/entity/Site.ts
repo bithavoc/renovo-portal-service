@@ -1,10 +1,7 @@
-import { Entity, Column, PrimaryColumn, BaseEntity, ManyToOne, JoinColumn, OneToMany } from "typeorm";
+import { Entity, Column, PrimaryColumn, BaseEntity, OneToMany } from "typeorm";
 import { OrganizationLocation } from "../../externalServices/vac/vac-sdk";
 import { SiteDetails } from "../../externalServices/zerto/zerto-sdk";
-import { Protection } from "../../resolvers/protections";
-import AssetEntity from "./Asset";
 import AssetSiteEntity from "./AssetSite";
-import OrganizationEntity from "./Organization";
 import ProtectionSiteEntity from "./ProtectionSite";
 import SiteOrganizationEntity from "./SiteOrganization";
 

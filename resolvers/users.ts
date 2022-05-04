@@ -1,12 +1,8 @@
 import { AuthenticationError } from "apollo-server";
-import { Arg, Ctx, Field, FieldResolver, ID, InputType, Mutation, ObjectType, Query, Resolver, Root } from "type-graphql";
+import { Arg, Field, ID, InputType, Mutation, ObjectType, Query, Resolver } from "type-graphql";
 import UserEntity from "../database/entity/user";
 import { uuid } from 'uuidv4';
 import { hash } from 'bcrypt';
-import { Site } from "./sites";
-import { Protection } from "./protections";
-import AssetEntity from "../database/entity/Asset";
-import { Asset } from "./Assets";
 
 @ObjectType()
 export class User {
