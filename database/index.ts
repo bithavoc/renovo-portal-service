@@ -5,6 +5,7 @@ import AssetSiteEntity from "./entity/AssetSite";
 import OrganizationEntity from "./entity/Organization";
 import OrganizationMemberEntity from "./entity/OrganizationMember";
 import ProtectionEntity from "./entity/Protection";
+import ProtectionSiteEntity from "./entity/ProtectionSite";
 import SiteEntity from "./entity/Site";
 import SiteOrganizationEntity from "./entity/SiteOrganization";
 import TokenEntity from "./entity/token";
@@ -28,6 +29,7 @@ import { CreateSiteOrganizationTable1650209011918 } from "./migration/1650209011
 import { DropSiteOrganizationColumn1650209640070 } from "./migration/1650209640070-DropSiteOrganizationColumn";
 import { DropAssetSiteOrganization1650209905453 } from "./migration/1650209905453-DropAssetSiteOrganization";
 import { CreateProtectionsTable1651489422541 } from "./migration/1651489422541-CreateProtectionsTable";
+import { CreateProtectionSitesTable1651692586049 } from "./migration/1651692586049-CreateProtectionSitesTable";
 
 export const initDatabase = () => createConnection({
     "type": "postgres",
@@ -45,6 +47,7 @@ export const initDatabase = () => createConnection({
         AssetSiteEntity,
         SiteOrganizationEntity,
         ProtectionEntity,
+        ProtectionSiteEntity,
     ],
     "migrations": [
         CreateUser1630703672513,
@@ -66,5 +69,6 @@ export const initDatabase = () => createConnection({
         DropSiteOrganizationColumn1650209640070,
         DropAssetSiteOrganization1650209905453,
         CreateProtectionsTable1651489422541,
+        CreateProtectionSitesTable1651692586049,
     ]
 });

@@ -1,9 +1,11 @@
 import { Entity, Column, PrimaryColumn, BaseEntity, ManyToOne, JoinColumn, OneToMany } from "typeorm";
 import { OrganizationLocation } from "../../externalServices/vac/vac-sdk";
 import { SiteDetails } from "../../externalServices/zerto/zerto-sdk";
+import { Protection } from "../../resolvers/protections";
 import AssetEntity from "./Asset";
 import AssetSiteEntity from "./AssetSite";
 import OrganizationEntity from "./Organization";
+import ProtectionSiteEntity from "./ProtectionSite";
 import SiteOrganizationEntity from "./SiteOrganization";
 
 @Entity({ name: "sites" })
@@ -28,4 +30,7 @@ export default class SiteEntity extends BaseEntity {
 
     @OneToMany(type => SiteOrganizationEntity, siteOrg => siteOrg.site)
     organizations: SiteOrganizationEntity[];
+
+    @OneToMany(type => ProtectionSiteEntity, protectionSite => protectionSite.site)
+    protections: ProtectionSiteEntity[];
 }

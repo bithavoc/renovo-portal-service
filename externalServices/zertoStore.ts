@@ -4,6 +4,7 @@ import AssetEntity from "../database/entity/Asset";
 import AssetSiteEntity from "../database/entity/AssetSite";
 import OrganizationEntity from "../database/entity/Organization";
 import ProtectionEntity from "../database/entity/Protection";
+import ProtectionSiteEntity from "../database/entity/ProtectionSite";
 import SiteEntity from "../database/entity/Site";
 import SiteOrganizationEntity from "../database/entity/SiteOrganization";
 import { Api, HttpClient, ProtectedVpgs, RequestParams, SiteDetails, Vms } from "./zerto/zerto-sdk";
@@ -42,6 +43,13 @@ const zsiteSiteId = (zertoSiteId: string) => `zsite_${zertoSiteId}`;
 const vmsAssetId = (vmsId: string) => `zvms_${vmsId}`;
 const vpgProtectionId = (vpgId: string) => `zvpg_${vpgId}`;
 
+const getVPGSites = (vpg: ProtectedVpgs) => {
+    const protectedSite = vpg.protectedSite as ExtProtectedVmsSite;
+    const recoverySite = vpg.recoverySite as ExtProtectedVmsSite;
+    const allSites = [protectedSite, recoverySite].filter(Boolean);
+    return allSites;
+};
+
 
 // info from swagger was incomplete
 export interface ExtProtectedVmsSite {
@@ -57,7 +65,7 @@ export interface ExtProtectedVmsSite {
     identifier?: string;
 }
 
-const getVmsSiteVpg = (vms: Vms, zsiteId: string): ProtectedVpgs | undefined => vms.vpgs!.find(vpg => (vpg.protectedSite as ExtProtectedVmsSite).identifier === zsiteId)
+// const getVmsSiteVpg = (vms: Vms, zsiteId: string): ProtectedVpgs | undefined => vms.vpgs!.find(vpg => (vpg.protectedSite as ExtProtectedVmsSite).identifier === zsiteId)
 
 
 const plannerSitesList = (c: HttpClient, query?: { zorgIdentifier?: string }, params: RequestParams = {}) =>
@@ -97,93 +105,129 @@ export default class ZertoStore {
             await org.save();
             const organizationId = org.id;
 
-            const sitesRes = await plannerSitesList(zerto, {
-                zorgIdentifier: zorg.identifier,
-            });
-            const sites = sitesRes.data;
-            console.log("zorg", zorg.name, " site count", sites.map(s => s.name))
+        }
 
-            // const vpgs = await zerto.v2.monitoringVpgsList({
-            //     zorgIdentifier: zorg.identifier,
-            // })
+        const sitesRes = await zerto.v2.monitoringSitesFormatTopologyList()
+        // const sitesRes = await plannerSitesList(zerto, {
+        //     // zorgIdentifier: zorg.identifier,
+        // });
+        // const sitesRes = await zerto.v2.monitoringSitesList({});
+        const sites = sitesRes.data;
+        console.log("zsite count", sites.map(s => s.name))
 
-
-            const vpgsList = await zerto.v2.monitoringVpgsList({
-                zorgIdentifier: zorg.identifier
-            })
-
-            for (const vpg of vpgsList.data.vpgs) {
-                const protectionId = vpgProtectionId(vpg.identifier);
-                let protection = await ProtectionEntity.findOne(protectionId);
-                if (!protection) {
-                    protection = new ProtectionEntity()
-                    protection.protectionId = protectionId;
-                    protection.createdAt = new Date()
-                }
-                protection.title = vpg.name;
-                protection.zertoMeta = vpg;
-                await protection.save();
-                console.log("vpg saved", protection.title)
+        for (const zsite of sites) {
+            const siteId = zsiteSiteId(zsite.identifier);
+            let site = await SiteEntity.findOne(siteId);
+            if (!site) {
+                site = new SiteEntity()
+                site.siteId = siteId;
+                site.createdAt = new Date()
             }
+            // site.organization = org;
+            site.title = zsite.name;
+            site.zertoMeta = zsite;
+            await site.save();
+            console.log("zsite saved", zsite.identifier, site.title)
 
-            // console.log("vpgs count", vpgsList.data.vpgs.length);
-
-            // for (const vpg of vpgsList.data.vpgs) {
-            //     console.log("vpg item", vpg.name)
-            // }
-
-            const vmsRes = await zerto.v2.monitoringProtectedVmsList()
-
-            const vmsList = vmsRes.data as Vms[];
-            // console.log("vms", vmsList);
-
-            for (const zsite of sites) {
-                const siteId = zsiteSiteId(zsite.identifier);
-                let site = await SiteEntity.findOne(siteId); // HACK: could be overriding organization site belongs to multiple zorgs
-                if (!site) {
-                    site = new SiteEntity()
-                    site.siteId = siteId;
-                    site.createdAt = new Date()
-                }
-                // site.organization = org;
-                site.title = zsite.name;
-                site.zertoMeta = zsite;
-                await site.save();
-                console.log("site saved", site.title)
-
+            for (const zorg of zsite.zorgs) {
+                const orgId = companyOrganizationId(zorg.identifier);
                 let siteOrg = await SiteOrganizationEntity.createQueryBuilder('so').where({
                     siteId,
-                    organizationId,
+                    organizationId: orgId,
                 }).getOne();
                 if (!siteOrg) {
                     siteOrg = new SiteOrganizationEntity();
                     siteOrg.siteOrganizationId = uuid();
                     siteOrg.createdAt = new Date();
                 }
-                siteOrg.organizationId = organizationId;
+                siteOrg.organizationId = orgId;
                 siteOrg.siteId = siteId;
                 await siteOrg.save();
+            }
+        }
 
-                for (const vms of vmsList) {
+        const vpgsRes = await zerto.v2.monitoringVpgsList({
+            // zorgIdentifier: zorg.identifier
+        })
+        let vpgs = vpgsRes.data;
+        const noContentStatus = 204;
+        if (vpgsRes.status == noContentStatus) {
+            vpgs = {
+                vpgs: []
+            };
+        }
 
-                    const vpg = getVmsSiteVpg(vms, zsite.identifier);
-                    if (!vpg) {
-                        continue
-                    }
-                    const assetId = vmsAssetId(vms.identifier);
-                    let asset = await AssetEntity.findOne(assetId);
-                    if (!asset) {
-                        asset = new AssetEntity()
-                        asset.assetId = assetId;
-                        asset.createdAt = new Date()
-                    }
-                    // asset.site = site;
-                    // asset.organization = org;
-                    asset.title = vms.name;
-                    asset.zertoMeta = vms;
-                    await asset.save();
-                    console.log("asset saved", asset.title)
+        console.log('vpgsRes', vpgsRes);
 
+        for (const vpg of vpgs.vpgs) {
+            const protectionId = vpgProtectionId(vpg.identifier);
+            let protection = await ProtectionEntity.findOne(protectionId);
+            if (!protection) {
+                protection = new ProtectionEntity()
+                protection.protectionId = protectionId;
+                protection.createdAt = new Date()
+            }
+            protection.title = vpg.name;
+            protection.zertoMeta = vpg;
+            await protection.save();
+            console.log("vpg saved", protection.title)
+
+            const allSites = getVPGSites(vpg);
+
+            for (const zsite of allSites) {
+                const siteId = zsiteSiteId(zsite.identifier);
+                let protectionSite = await ProtectionSiteEntity.findOne({
+                    protectionId: protectionId,
+                    siteId,
+                });
+                if (!protectionSite) {
+                    protectionSite = new ProtectionSiteEntity()
+                    protectionSite.createdAt = new Date()
+                }
+                protectionSite.siteId = siteId;
+                protectionSite.protectionId = protectionId;
+                // assetSite.organization = org;
+                await protectionSite.save();
+
+                console.log("protection site saved", protectionSite.protectionId, protectionSite.siteId);
+            }
+        }
+
+        // console.log("vpgs count", vpgsList.data.vpgs.length);
+
+        // for (const vpg of vpgsList.data.vpgs) {
+        //     console.log("vpg item", vpg.name)
+        // }
+
+        const vmsRes = await zerto.v2.monitoringProtectedVmsList()
+
+        const vmsList = vmsRes.data as Vms[];
+        // console.log("vms", vmsList);
+
+        for (const vms of vmsList) {
+            const assetId = vmsAssetId(vms.identifier);
+            let asset = await AssetEntity.findOne(assetId);
+            if (!asset) {
+                asset = new AssetEntity()
+                asset.assetId = assetId;
+                asset.createdAt = new Date()
+            }
+            // asset.site = site;
+            // asset.organization = org;
+            asset.title = vms.name;
+            asset.zertoMeta = vms;
+            await asset.save();
+            console.log("asset saved", asset.title)
+
+            for (const vpg of vms.vpgs) {
+                // const protectedSite = vpg.protectedSite as ExtProtectedVmsSite;
+                // const recoverySite = vpg.recoverySite as ExtProtectedVmsSite;
+                // const allSites = [protectedSite, recoverySite].filter(Boolean);
+                const allSites = getVPGSites(vpg);
+
+                for (const zsite of allSites) {
+                    console.log("saving vpg site for site", vpg.name, zsite);
+                    const siteId = zsiteSiteId(zsite.identifier);
                     let assetSite = await AssetSiteEntity.findOne({
                         siteId: siteId,
                         assetId: assetId,
@@ -201,7 +245,6 @@ export default class ZertoStore {
                 }
             }
         }
-
 
         console.log("zerto store loaded")
     }
