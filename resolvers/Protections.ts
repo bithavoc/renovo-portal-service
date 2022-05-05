@@ -1,6 +1,7 @@
 import { ForbiddenError } from "apollo-server";
-import { Ctx, Field, ID, ObjectType, Query, Resolver } from "type-graphql";
+import { Ctx, Field, FieldResolver, ID, ObjectType, Query, Resolver, Root } from "type-graphql";
 import ProtectionEntity from "../database/entity/Protection";
+import ProtectionSiteEntity from "../database/entity/ProtectionSite";
 import TokenEntity from "../database/entity/token";
 import VacStore from "../externalServices/vacStore";
 import { ProtectionSite } from "./ProtectionSites";
@@ -28,6 +29,14 @@ class ProtectionsResolver {
       throw new ForbiddenError("access denied")
     }
     return await ProtectionEntity.createQueryBuilder("prot").leftJoinAndSelect('prot.sites', 'sites').getMany()
+  }
+
+  @FieldResolver()
+  async sites(@Root() protection: ProtectionEntity): Promise<ProtectionSite[]> {
+    const sites = await ProtectionSiteEntity.createQueryBuilder('protsite').where({
+      protectionId: protection.protectionId
+    }).getMany();
+    return sites;
   }
 }
 

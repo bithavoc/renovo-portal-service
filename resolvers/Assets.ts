@@ -1,5 +1,6 @@
 import { Field, ID, ObjectType, Query, Resolver } from "type-graphql";
 import AssetEntity from "../database/entity/Asset";
+import { AssetProtection } from "./AssetProtections";
 import { AssetSite } from "./AssetSites";
 
 @ObjectType()
@@ -49,6 +50,9 @@ export class Asset {
   @Field(() => [AssetSite])
   sites: AssetSite[];
 
+  @Field(() => [AssetProtection])
+  protections: AssetProtection[];
+
   @Field()
   createdAt: Date;
 
@@ -65,7 +69,7 @@ class AssetsResolver {
   async getAssets(
     // @Arg("siteId") siteId: string,
   ): Promise<Asset[]> {
-    return await AssetEntity.createQueryBuilder("asset").leftJoinAndSelect('asset.sites', 'sites').getMany()
+    return await AssetEntity.createQueryBuilder("asset").leftJoinAndSelect('asset.sites', 'sites').leftJoinAndSelect('asset.protections', 'protections').getMany()
   }
 }
 
