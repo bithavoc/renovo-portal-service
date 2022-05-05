@@ -1,5 +1,6 @@
 import { Entity, Column, PrimaryColumn, BaseEntity, OneToMany } from "typeorm";
 import { Vpg } from "../../externalServices/zerto/zerto-sdk";
+import AssetProtectionEntity from "./AssetProtection";
 import ProtectionSiteEntity from "./ProtectionSite";
 
 @Entity({ name: "protections" })
@@ -23,4 +24,7 @@ export default class ProtectionEntity extends BaseEntity {
 
     @OneToMany(type => ProtectionSiteEntity, protectionSite => protectionSite.protection)
     sites: ProtectionSiteEntity[];
+
+    @OneToMany(type => AssetProtectionEntity, assetProtection => assetProtection.protection)
+    assets: AssetProtectionEntity[];
 }

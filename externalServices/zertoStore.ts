@@ -1,5 +1,6 @@
 import { uuid } from "uuidv4";
 import AssetEntity from "../database/entity/Asset";
+import AssetProtectionEntity from "../database/entity/AssetProtection";
 import AssetSiteEntity from "../database/entity/AssetSite";
 import OrganizationEntity from "../database/entity/Organization";
 import ProtectionEntity from "../database/entity/Protection";
@@ -258,9 +259,30 @@ export default class ZertoStore {
 
                     console.log("asset site saved", assetSite.assetId, assetSite.siteId);
                 }
+
+                const protectionId = vpgProtectionId(vpg.identifier)
+
+                let assetProtection = await AssetProtectionEntity.findOne({
+                    protectionId,
+                    assetId,
+                });
+                if (!assetProtection) {
+                    assetProtection = new AssetProtectionEntity()
+                    assetProtection.createdAt = new Date()
+                    assetProtection.assetProtectionId = assetProtectionId(assetId, protectionId)
+                }
+                assetProtection.protectionId = protectionId;
+                assetProtection.assetId = assetId;
+                // assetSite.organization = org;
+                await assetProtection.save();
             }
         }
 
         console.log("zerto store loaded")
     }
+}
+
+function assetProtectionId(assetId: string, protectionId: string) {
+    return `${assetId
+        }_${protectionId}`
 }

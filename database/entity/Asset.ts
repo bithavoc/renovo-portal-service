@@ -1,6 +1,7 @@
 import { Entity, Column, PrimaryColumn, BaseEntity, ManyToOne, JoinColumn, OneToMany } from "typeorm";
 import { ProtectedVirtualMachine } from "../../externalServices/vac/vac-sdk";
 import { Vms } from "../../externalServices/zerto/zerto-sdk";
+import AssetProtectionEntity from "./AssetProtection";
 import AssetSiteEntity from "./AssetSite";
 import OrganizationEntity from "./Organization";
 
@@ -25,4 +26,7 @@ export default class AssetEntity extends BaseEntity {
 
     @OneToMany(type => AssetSiteEntity, assetSite => assetSite.asset)
     sites: AssetSiteEntity[];
+
+    @OneToMany(type => AssetProtectionEntity, assetProtection => assetProtection.asset)
+    protections: AssetProtectionEntity[];
 }
