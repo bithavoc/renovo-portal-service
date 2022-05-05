@@ -1,5 +1,5 @@
 import { ForbiddenError } from "apollo-server";
-import { Ctx, Field, FieldResolver, ID, ObjectType, Query, Resolver, Root } from "type-graphql";
+import { Arg, Ctx, Field, FieldResolver, ID, ObjectType, Query, Resolver, Root } from "type-graphql";
 import ProtectionEntity from "../database/entity/Protection";
 import ProtectionSiteEntity from "../database/entity/ProtectionSite";
 import TokenEntity from "../database/entity/token";
@@ -37,6 +37,15 @@ class ProtectionsResolver {
       protectionId: protection.protectionId
     }).getMany();
     return sites;
+  }
+
+  @Query(returns => Protection)
+  async getProtection(
+    @Arg("protectionId") protectionId: string,
+  ): Promise<Protection> {
+    return await ProtectionEntity.createQueryBuilder("prot").leftJoinAndSelect('prot.sites', 'sites').where({
+      protectionId,
+    }).getOne()
   }
 }
 
