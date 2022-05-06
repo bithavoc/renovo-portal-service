@@ -1,5 +1,6 @@
-import { Arg, Field, ID, ObjectType, Query, Resolver } from "type-graphql";
+import { Arg, Field, FieldResolver, ID, ObjectType, Query, Resolver, Root } from "type-graphql";
 import AssetEntity from "../database/entity/Asset";
+import AssetSiteEntity from "../database/entity/AssetSite";
 import { AssetProtection } from "./AssetProtections";
 import { AssetSite } from "./AssetSites";
 
@@ -79,6 +80,14 @@ class AssetsResolver {
     return await AssetEntity.createQueryBuilder("asset").leftJoinAndSelect('asset.sites', 'sites').leftJoinAndSelect('asset.protections', 'protections').where({
       assetId,
     }).getOne()
+  }
+
+  @FieldResolver()
+  async sites(@Root() asset: AssetEntity): Promise<AssetSiteEntity[]> {
+    const sites = await AssetSiteEntity.createQueryBuilder('protsite').where({
+      assetId: asset.assetId
+    }).getMany();
+    return sites;
   }
 }
 
