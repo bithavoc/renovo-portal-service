@@ -1,5 +1,6 @@
 import { Arg, Field, FieldResolver, ID, ObjectType, Query, Resolver, Root } from "type-graphql";
 import AssetEntity from "../database/entity/Asset";
+import AssetProtectionEntity from "../database/entity/AssetProtection";
 import AssetSiteEntity from "../database/entity/AssetSite";
 import { AssetProtection } from "./AssetProtections";
 import { AssetSite } from "./AssetSites";
@@ -88,6 +89,14 @@ class AssetsResolver {
       assetId: asset.assetId
     }).getMany();
     return sites;
+  }
+
+  @FieldResolver()
+  async protections(@Root() asset: AssetEntity): Promise<AssetProtection[]> {
+    const list = await AssetProtectionEntity.createQueryBuilder('protsite').where({
+      assetId: asset.assetId
+    }).getMany();
+    return list;
   }
 }
 
