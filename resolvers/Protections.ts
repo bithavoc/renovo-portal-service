@@ -1,9 +1,12 @@
 import { ForbiddenError } from "apollo-server";
 import { Arg, Ctx, Field, FieldResolver, ID, ObjectType, Query, Resolver, Root } from "type-graphql";
+import AssetProtectionEntity from "../database/entity/AssetProtection";
 import ProtectionEntity from "../database/entity/Protection";
 import ProtectionSiteEntity from "../database/entity/ProtectionSite";
 import TokenEntity from "../database/entity/token";
 import VacStore from "../externalServices/vacStore";
+import { AssetProtection } from "./AssetProtections";
+import { Asset } from "./Assets";
 import { ProtectionSite } from "./ProtectionSites";
 
 @ObjectType()
@@ -16,6 +19,9 @@ export class Protection {
 
   @Field(() => [ProtectionSite])
   sites: ProtectionSite[];
+
+  @Field(() => [AssetProtection])
+  assets: AssetProtection[];
 }
 
 @Resolver(Protection)
@@ -37,6 +43,14 @@ class ProtectionsResolver {
       protectionId: protection.protectionId
     }).getMany();
     return sites;
+  }
+
+  @FieldResolver()
+  async assets(@Root() protection: ProtectionEntity): Promise<AssetProtection[]> {
+    const list = await AssetProtectionEntity.createQueryBuilder('assetprot').where({
+      protectionId: protection.protectionId
+    }).getMany();
+    return list;
   }
 
   @Query(returns => Protection)
