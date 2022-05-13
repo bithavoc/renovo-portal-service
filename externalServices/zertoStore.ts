@@ -7,6 +7,7 @@ import ProtectionEntity from "../database/entity/Protection";
 import ProtectionSiteEntity, { Purpose } from "../database/entity/ProtectionSite";
 import SiteEntity from "../database/entity/Site";
 import SiteOrganizationEntity from "../database/entity/SiteOrganization";
+import { assetProtectionId } from "./identifiers";
 import { Api, HttpClient, ProtectedVpgs, RequestParams, SiteDetails, Vms } from "./zerto/zerto-sdk";
 
 const createBaseParams = () => ({
@@ -280,9 +281,4 @@ export default class ZertoStore {
 
         console.log("zerto store loaded")
     }
-}
-
-function assetProtectionId(assetId: string, protectionId: string) {
-    return `${assetId
-        }_${protectionId}`
 }

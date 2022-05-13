@@ -1,4 +1,5 @@
 import { Entity, Column, PrimaryColumn, BaseEntity, OneToMany } from "typeorm";
+import { BackupServerJob } from "../../externalServices/vac/vac-sdk";
 import { Vpg } from "../../externalServices/zerto/zerto-sdk";
 import AssetProtectionEntity from "./AssetProtection";
 import ProtectionSiteEntity from "./ProtectionSite";
@@ -17,10 +18,10 @@ export default class ProtectionEntity extends BaseEntity {
     @Column({ type: 'simple-json', name: "zerto_meta", nullable: true })
     zertoMeta?: Vpg;
 
-    // @Column({ type: 'simple-json', name: "veeam_meta", nullable: true })
-    // veeamMeta?: {
-    //     vm?: ProtectedVirtualMachine
-    // };
+    @Column({ type: 'simple-json', name: "veeam_meta", nullable: true })
+    veeamMeta?: {
+        backupServerJob?: BackupServerJob
+    };
 
     @OneToMany(type => ProtectionSiteEntity, protectionSite => protectionSite.protection)
     sites: ProtectionSiteEntity[];
