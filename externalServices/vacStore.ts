@@ -24,6 +24,7 @@ const companyOrganizationId = (vacCompanyId: string) => `veeamc_${vacCompanyId}`
 const locationSiteId = (locationId: string) => `veeamloc_${locationId}`;
 const vmAssetId = (vmInstanceId: string) => `veeamvm_${vmInstanceId}`;
 const backupServerJobProtectionId = (jobId: string) => `veeambsj_${jobId}`;
+const protectedComputerAssetId = (protectedComputerUid: string) => `veeampc_${protectedComputerUid}`;
 
 export default class VacStore {
     allBackupServerJobs: BackupServerJob[] = [];
@@ -33,6 +34,8 @@ export default class VacStore {
     allProtectedComputersByBackupServer: ProtectedComputerManagedByBackupServer[];
     allProtectedComputersByConsole: ProtectedComputerManagedByConsole[];
     allLocations: OrganizationLocation[];
+    allProtectedComputersManagedByBackupServer: ProtectedComputerManagedByBackupServer[];
+    allProtectedComputersManagedByConsole: ProtectedComputerManagedByConsole[];
     constructor() {
 
     }
@@ -44,7 +47,7 @@ export default class VacStore {
         this.allLocations = await loadAllResources(params => vac.organizations.getLocations({ ...params }));
         // this.allProtectedComputersByConsole = await loadAllResources(params => vac.protectedWorkloads.getProtectedComputersManagedByConsole({ ...params }));
         this.allProtectedVirtualMachines = await loadAllResources(params => vac.protectedWorkloads.getProtectedVirtualMachines({ ...params }));
-        const vmBackupJobs = await loadAllResources(params => vac.infrastructure.getBackupServerAgentJobs({ ...params }));
+        // const vmBackupJobs = await loadAllResources(params => vac.infrastructure.getBackupServerAgentJobs({ ...params }));
 
         const backupAgentJobs = await loadAllResources(params => vac.infrastructure.getBackupAgentJobs({ ...params }));
         console.log("backupAgentJobs", backupAgentJobs.length);
@@ -54,6 +57,10 @@ export default class VacStore {
 
         const backupServerJobs = await loadAllResources(params => vac.infrastructure.getBackupServerJobs({ ...params }));
         console.log("backupServerJobs", backupServerJobs.length);
+
+        this.allProtectedComputersManagedByBackupServer = await loadAllResources(params => vac.protectedWorkloads.getProtectedComputersManagedByBackupServer({ ...params }));
+        this.allProtectedComputersManagedByConsole = await loadAllResources(params => vac.protectedWorkloads.getProtectedComputersManagedByConsole({ ...params }));
+        console.log("allProtectedComputersManagedByConsole", this.allProtectedComputersManagedByConsole.length);
 
         // return;
         for (const company of this.allCompanies) {
@@ -208,6 +215,64 @@ export default class VacStore {
                     } else {
                         console.log("missing protection", pvm.jobUid, "for protected virtual machine", pvm.instanceUid)
                     }
+                }
+
+                for (const pvm of this.allProtectedComputersManagedByConsole) {
+                    if (pvm.organizationUid !== loc.organizationUid) {
+                        continue
+                    }
+                    const assetId = protectedComputerAssetId(pvm.backupAgentUid);
+                    let asset = await AssetEntity.findOne(assetId);
+                    if (!asset) {
+                        asset = new AssetEntity()
+                        asset.assetId = assetId;
+                        asset.createdAt = new Date()
+                    }
+                    // asset.site = site;
+                    // asset.organization = org;
+                    asset.title = pvm.name;
+                    asset.veeamMeta = {
+                        vm: pvm,
+                    };
+                    await asset.save();
+                    console.log("allProtectedComputersManagedByConsole asset saved", asset.title, asset.assetId)
+
+                    let assetSite = await AssetSiteEntity.findOne({
+                        siteId: siteId,
+                        assetId: assetId,
+                    });
+                    if (!assetSite) {
+                        assetSite = new AssetSiteEntity()
+                        assetSite.createdAt = new Date()
+                    }
+                    assetSite.siteId = siteId;
+                    assetSite.assetId = assetId;
+                    // assetSite.organization = org;
+                    await assetSite.save();
+
+                    console.log("asset site saved", assetSite.assetId, assetSite.siteId);
+
+                    // vac.infrastructure.getBackup
+
+                    // const protectionId = backupServerJobProtectionId(pvm.); // TODO: use other types of jobs
+
+                    // const protection = await ProtectionEntity.findOne(protectionId)
+                    // if (protection) {
+                    //     let assetProtection = await AssetProtectionEntity.findOne({
+                    //         protectionId,
+                    //         assetId,
+                    //     });
+                    //     if (!assetProtection) {
+                    //         assetProtection = new AssetProtectionEntity()
+                    //         assetProtection.createdAt = new Date()
+                    //         assetProtection.assetProtectionId = assetProtectionId(assetId, protectionId)
+                    //     }
+                    //     assetProtection.protectionId = protectionId;
+                    //     assetProtection.assetId = assetId;
+                    //     await assetProtection.save();
+                    // } else {
+                    //     console.log("missing protection", pvm.jobUid, "for protected virtual machine", pvm.instanceUid)
+                    // }
                 }
             }
         }
