@@ -40,7 +40,7 @@ export default class VacStore {
     allBackupAgentJobs: BackupAgentJob[];
     allBackupAgents: BackupAgent[];
     allSites: CloudAgent[];
-    allManagementSites: ManagementAgent[];
+    allManagementAgents: ManagementAgent[];
     constructor() {
 
     }
@@ -50,23 +50,28 @@ export default class VacStore {
     findBackupAgentJobsOfAgent(agentUid: string): BackupAgentJob[] | undefined {
         return this.allBackupAgentJobs.filter(j => j.backupAgentUid === agentUid);
     }
+    findLocation(uid: string): OrganizationLocation | undefined {
+        return this.allLocations.find(l => l.instanceUid === uid);
+    }
+    findCompany(uid: string): Company | undefined {
+        return this.allCompanies.find(c => c.instanceUid === uid);
+    }
+    findManagementAgent(uid: string): ManagementAgent | undefined {
+        return this.allManagementAgents.find(c => c.instanceUid === uid);
+    }
     async load() {
         console.log("vac store loading")
         const vac = createVeamClient(process.env.VAC_AT);
+        this.allCompanies = await loadAllResources(params => vac.organizations.getCompanies({ ...params }));
+        this.allLocations = await loadAllResources(params => vac.organizations.getLocations({ ...params }));
+
+        this.allManagementAgents = await loadAllResources(params => vac.infrastructure.getManagementAgents({ ...params }));
+
         this.allBackupAgents = await loadAllResources(params => vac.infrastructure.getBackupAgents({ ...params }));
         console.log("allBackupAgents", this.allBackupAgents.length);
 
-        // const getMacBackupAgents = await loadAllResources(params => vac.infrastructure.getMacBackupAgents({ ...params }));
-        // console.log("getMacBackupAgents", getMacBackupAgents.length);
-        // const getWindowsBackupAgents = await loadAllResources(params => vac.infrastructure.getWindowsBackupAgents({ ...params }));
-        // console.log("getWindowsBackupAgents", getWindowsBackupAgents.length);
-        // const getLinuxBackupAgents = await loadAllResources(params => vac.infrastructure.getLinuxBackupAgents({ ...params }));
-        // console.log("getLinuxBackupAgents", getLinuxBackupAgents.length);
-
         this.allBackupAgentJobs = await loadAllResources(params => vac.infrastructure.getBackupAgentJobs({ ...params }));
         console.log("backupAgentJobs", this.allBackupAgentJobs.length);
-
-        // let last = null;
 
         // for (const agent of this.allBackupAgents) {
         //     console.log("saving backup agent", agent.instanceUid, agent.name, agent.operationMode)
@@ -74,22 +79,26 @@ export default class VacStore {
         //         console.log("agent", agent);
         //         const jobs = this.findBackupAgentJobsOfAgent(agent.instanceUid);
         //         console.log('jobs', jobs);
+
+        //         const manAgent = await vac.infrastructure.getManagementAgent(agent.managementAgentUid);
+        //         console.log('man agent', manAgent);
+
+        //         const location = this.findLocation(manAgent.data.data.locationUid)
+        //         console.log('location', location);
+
+        //         const company = this.findCompany(location.organizationUid)
+        //         console.log('company', company);
+
         //         process.exit(1);
         //     }
-        //     last = agent;
         // }
 
         // const agent = await vac.infrastructure.getBackupAgent('60a70bf8-6449-6c66-9cea-b84d9cb9fb7e');
-
         // console.log("agent", agent, 'vs last from list', last);
-
         // return;
 
-        this.allCompanies = await loadAllResources(params => vac.organizations.getCompanies({ ...params }));
-        this.allLocations = await loadAllResources(params => vac.organizations.getLocations({ ...params }));
         this.allSites = await loadAllResources(params => vac.infrastructure.getSites({ ...params }));
-        this.allManagementSites = await loadAllResources(params => vac.infrastructure.getManagementAgents({ ...params }));
-        // console.log("all allManagementSites", this.allManagementSites);
+        // console.log("all allManagementAgents", this.allManagementAgents);
         console.log("all sites", this.allSites);
         // const backupServers = await loadAllResources(params => vac.infrastructure.getBackupServers({ ...params }));
         // console.log("all backup servers", backupServers);
@@ -103,6 +112,21 @@ export default class VacStore {
         this.allProtectedComputersManagedByConsole = await loadAllResources(params => vac.protectedWorkloads.getProtectedComputersManagedByConsole({ ...params }));
         console.log("allProtectedComputersManagedByBackupServer", this.allProtectedComputersManagedByBackupServer.length);
         console.log("allProtectedComputersManagedByConsole", this.allProtectedComputersManagedByConsole.length);
+        for (const loc of this.allLocations) {
+            const siteId = locationSiteId(loc.instanceUid);
+            let site = await SiteEntity.findOne(siteId);
+            if (!site) {
+                site = new SiteEntity()
+                site.createdAt = new Date()
+            }
+            site.siteId = siteId;
+            // site.organization = org;
+            site.title = loc.name;
+            site.veeamMeta = loc;
+            await site.save();
+            console.log("site saved", site.title)
+        }
+
 
         for (const company of this.allCompanies) {
             const orgId = companyOrganizationId(company.instanceUid);
@@ -177,41 +201,36 @@ export default class VacStore {
                 await protection.save();
                 console.log("backup agent job saved", protection.title)
 
-                // const siteId = locationSiteId(job.locationUid);
-                // let protectionSite = await ProtectionSiteEntity.findOne({
-                //     protectionId: protectionId,
-                //     siteId,
-                // });
-                // if (!protectionSite) {
-                //     protectionSite = new ProtectionSiteEntity()
-                //     protectionSite.createdAt = new Date()
-                // }
-                // protectionSite.siteId = siteId;
-                // protectionSite.protectionId = protectionId;
-                // protectionSite.purpose = 'protection';
-                // await protectionSite.save();
+                const { managementAgentUid } = backupAgent;
 
-                // console.log("protection site saved", protectionSite.protectionId, protectionSite.siteId);
+                if (managementAgentUid) {
+                    const managementAgent = this.findManagementAgent(managementAgentUid);
+                    if (!managementAgent) {
+                        console.warn("no management agent for job", job.instanceUid);
+                        continue;
+                    }
+                    const siteId = locationSiteId(managementAgent.locationUid);
+                    let protectionSite = await ProtectionSiteEntity.findOne({
+                        protectionId: protectionId,
+                        siteId,
+                    });
+                    if (!protectionSite) {
+                        protectionSite = new ProtectionSiteEntity()
+                        protectionSite.createdAt = new Date()
+                    }
+                    protectionSite.siteId = siteId;
+                    protectionSite.protectionId = protectionId;
+                    protectionSite.purpose = 'recovery';
+                    await protectionSite.save();
+                    console.log("protection site saved", protectionSite.protectionId, protectionSite.siteId);
+                }
             }
 
-            console.log("all locations", this.allLocations.length);
-            for (const loc of this.allLocations) {
-                if (loc.organizationUid !== company.instanceUid) {
-                    continue;
-                }
-                const siteId = locationSiteId(loc.instanceUid);
-                let site = await SiteEntity.findOne(siteId);
-                if (!site) {
-                    site = new SiteEntity()
-                    site.createdAt = new Date()
-                }
-                site.siteId = siteId;
-                // site.organization = org;
-                site.title = loc.name;
-                site.veeamMeta = loc;
-                await site.save();
-                console.log("site saved", site.title)
+            const locations = this.allLocations.filter(l => l.organizationUid == company.instanceUid);
 
+            console.log("company locations", locations.length);
+            for (const loc of locations) {
+                const siteId = locationSiteId(loc.instanceUid);
                 let siteOrg = await SiteOrganizationEntity.createQueryBuilder('so').where({
                     siteId,
                     organizationId,
