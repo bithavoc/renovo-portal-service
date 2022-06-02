@@ -64,8 +64,8 @@ export default class VacStore {
     findBackupServer(id: string): BackupServer | undefined {
         return this.allBackupServers.find(ba => ba.instanceUid == id);
     }
-    findBackupServerJobObjectsOfAgent(jobUid: string): BackupServerAgentJobObject[] | undefined {
-        return this.allBackupServerAgentJobObjects.filter(j => j.jobUid === jobUid);
+    findBackupServerJobObjectsWithAgent(agentUid: string): BackupServerAgentJobObject[] | undefined {
+        return this.allBackupServerAgentJobObjects.filter(j => j.agentUid === agentUid);
     }
     async load() {
         console.log("vac store loading")
@@ -462,34 +462,39 @@ export default class VacStore {
 
                     console.log("asset site saved", assetSite.assetId, assetSite.siteId);
 
-                    const { backupServerUid } = pvm;
-                    if (backupServerUid) {
+                    const { backupServerUid, sourceInstanceUid } = pvm;
+                    console.log('backupServerUid', backupServerUid, 'sourceInstanceUid', sourceInstanceUid);
+                    if (backupServerUid && sourceInstanceUid) {
                         const backupServer = this.findBackupServer(backupServerUid);
-                        // backupServer.
-                        // const backupJobs = this.findBackupAgentJobsOfAgent(backupAgentUid);
+                        const objectsOfAgent = this.findBackupServerJobObjectsWithAgent(sourceInstanceUid);
 
-                        // for (const backupJob of backupJobs) {
-                        //     const backupAgentJobUid = backupJob.instanceUid;
-                        //     const protectionId = backupAgentJobProtectionId(backupAgentJobUid);
+                        const backupJobs = objectsOfAgent.map(o => o.jobUid);
+                        console.log('backupJobs', backupJobs);
 
-                        //     const protection = await ProtectionEntity.findOne(protectionId)
-                        //     if (protection) {
-                        //         let assetProtection = await AssetProtectionEntity.findOne({
-                        //             protectionId,
-                        //             assetId,
-                        //         });
-                        //         if (!assetProtection) {
-                        //             assetProtection = new AssetProtectionEntity()
-                        //             assetProtection.createdAt = new Date()
-                        //             assetProtection.assetProtectionId = assetProtectionId(assetId, protectionId)
-                        //         }
-                        //         assetProtection.protectionId = protectionId;
-                        //         assetProtection.assetId = assetId;
-                        //         await assetProtection.save();
-                        //     } else {
-                        //         console.log("missing protection", backupAgentUid, "for protected virtual machine", pvm.backupAgentUid)
-                        //     }
-                        // }
+                        for (const backupAgentJobUid of backupJobs) {
+                            const protectionId = backupServerJobProtectionId(backupAgentJobUid);
+
+                            const protection = await ProtectionEntity.findOne(protectionId)
+                            if (protection) {
+                                let assetProtection = await AssetProtectionEntity.findOne({
+                                    protectionId,
+                                    assetId,
+                                });
+                                if (!assetProtection) {
+                                    assetProtection = new AssetProtectionEntity()
+                                    assetProtection.createdAt = new Date()
+                                    assetProtection.assetProtectionId = assetProtectionId(assetId, protectionId)
+                                }
+                                assetProtection.protectionId = protectionId;
+                                assetProtection.assetId = assetId;
+                                await assetProtection.save();
+                            } else {
+                                console.log("missing protection", backupAgentJobUid, "for protected virtual machine", pvm.instanceUid)
+                            }
+                        }
+                    }
+                    if (pvm.instanceUid === '4c4c4544-0033-4210-804e-b3c04f5a3132') {
+                        process.exit(1)
                     }
                 }// pvm
             }
