@@ -12,8 +12,8 @@ async function run() {
   const vacStore = new VacStore();
   await vacStore.load()
 
-  // const zertoStore = new ZertoStore();
-  // await zertoStore.load()
+  const zertoStore = new ZertoStore();
+  await zertoStore.load()
 
   console.log("importer finished")
 }
