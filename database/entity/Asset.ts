@@ -1,6 +1,7 @@
 import { Entity, Column, PrimaryColumn, BaseEntity, ManyToOne, JoinColumn, OneToMany } from "typeorm";
-import { ProtectedVirtualMachine } from "../../externalServices/vac/vac-sdk";
+import { ProtectedComputerManagedByBackupServer, ProtectedComputerManagedByConsole, ProtectedVirtualMachine } from "../../externalServices/vac/vac-sdk";
 import { Vms } from "../../externalServices/zerto/zerto-sdk";
+import { ProtectedComputer } from "../../repos/frontend/src/client/sdk";
 import AssetProtectionEntity from "./AssetProtection";
 import AssetSiteEntity from "./AssetSite";
 import OrganizationEntity from "./Organization";
@@ -22,6 +23,8 @@ export default class AssetEntity extends BaseEntity {
     @Column({ type: 'simple-json', name: "veeam_meta", nullable: true })
     veeamMeta?: {
         vm?: ProtectedVirtualMachine
+        computerByConsole?: ProtectedComputerManagedByConsole
+        computerByBackupServer?: ProtectedComputerManagedByBackupServer
     };
 
     @OneToMany(type => AssetSiteEntity, assetSite => assetSite.asset)
