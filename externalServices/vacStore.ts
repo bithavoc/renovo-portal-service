@@ -47,29 +47,62 @@ export default class VacStore {
     findBackupAgent(id: string): BackupAgent | undefined {
         return this.allBackupAgents.find(ba => ba.instanceUid == id);
     }
+    findBackupAgentJobsOfAgent(agentUid: string): BackupAgentJob[] | undefined {
+        return this.allBackupAgentJobs.filter(j => j.backupAgentUid === agentUid);
+    }
     async load() {
         console.log("vac store loading")
         const vac = createVeamClient(process.env.VAC_AT);
+        this.allBackupAgents = await loadAllResources(params => vac.infrastructure.getBackupAgents({ ...params }));
+        console.log("allBackupAgents", this.allBackupAgents.length);
+
+        // const getMacBackupAgents = await loadAllResources(params => vac.infrastructure.getMacBackupAgents({ ...params }));
+        // console.log("getMacBackupAgents", getMacBackupAgents.length);
+        // const getWindowsBackupAgents = await loadAllResources(params => vac.infrastructure.getWindowsBackupAgents({ ...params }));
+        // console.log("getWindowsBackupAgents", getWindowsBackupAgents.length);
+        // const getLinuxBackupAgents = await loadAllResources(params => vac.infrastructure.getLinuxBackupAgents({ ...params }));
+        // console.log("getLinuxBackupAgents", getLinuxBackupAgents.length);
+
+        this.allBackupAgentJobs = await loadAllResources(params => vac.infrastructure.getBackupAgentJobs({ ...params }));
+        console.log("backupAgentJobs", this.allBackupAgentJobs.length);
+
+        // let last = null;
+
+        // for (const agent of this.allBackupAgents) {
+        //     console.log("saving backup agent", agent.instanceUid, agent.name, agent.operationMode)
+        //     if (agent.instanceUid === '4c4c4544-0036-5310-804c-cac04f524432') {
+        //         console.log("agent", agent);
+        //         const jobs = this.findBackupAgentJobsOfAgent(agent.instanceUid);
+        //         console.log('jobs', jobs);
+        //         process.exit(1);
+        //     }
+        //     last = agent;
+        // }
+
+        // const agent = await vac.infrastructure.getBackupAgent('60a70bf8-6449-6c66-9cea-b84d9cb9fb7e');
+
+        // console.log("agent", agent, 'vs last from list', last);
+
+        // return;
 
         this.allCompanies = await loadAllResources(params => vac.organizations.getCompanies({ ...params }));
         this.allLocations = await loadAllResources(params => vac.organizations.getLocations({ ...params }));
         this.allSites = await loadAllResources(params => vac.infrastructure.getSites({ ...params }));
         this.allManagementSites = await loadAllResources(params => vac.infrastructure.getManagementAgents({ ...params }));
+        // console.log("all allManagementSites", this.allManagementSites);
         console.log("all sites", this.allSites);
-        console.log("all allManagementSites", this.allManagementSites);
-        return;
-        this.allProtectedVirtualMachines = await loadAllResources(params => vac.protectedWorkloads.getProtectedVirtualMachines({ ...params }));
+        // const backupServers = await loadAllResources(params => vac.infrastructure.getBackupServers({ ...params }));
+        // console.log("all backup servers", backupServers);
 
-        this.allBackupAgentJobs = await loadAllResources(params => vac.infrastructure.getBackupAgentJobs({ ...params }));
-        console.log("backupAgentJobs", this.allBackupAgentJobs.length);
+        this.allProtectedVirtualMachines = await loadAllResources(params => vac.protectedWorkloads.getProtectedVirtualMachines({ ...params }));
 
         const backupServerJobs = await loadAllResources(params => vac.infrastructure.getBackupServerJobs({ ...params }));
         console.log("backupServerJobs", backupServerJobs.length);
 
         this.allProtectedComputersManagedByBackupServer = await loadAllResources(params => vac.protectedWorkloads.getProtectedComputersManagedByBackupServer({ ...params }));
         this.allProtectedComputersManagedByConsole = await loadAllResources(params => vac.protectedWorkloads.getProtectedComputersManagedByConsole({ ...params }));
+        console.log("allProtectedComputersManagedByBackupServer", this.allProtectedComputersManagedByBackupServer.length);
         console.log("allProtectedComputersManagedByConsole", this.allProtectedComputersManagedByConsole.length);
-        this.allBackupAgents = await loadAllResources(params => vac.infrastructure.getBackupAgents({ ...params }));
 
         for (const company of this.allCompanies) {
             const orgId = companyOrganizationId(company.instanceUid);
@@ -82,7 +115,21 @@ export default class VacStore {
             org.title = company.name;
             await org.save();
             const organizationId = org.id;
+
+            // for (const agent of this.allBackupAgents) {
+            //     console.log("saving backup agent", agent.instanceUid, agent)
+            //     if (agent.organizationUid !== company.instanceUid) {
+            //         continue;
+            //     }
+            //     if (agent.instanceUid === '60a70bf8-6449-6c66-9cea-b84d9cb9fb7e') {
+            //         console.log('backup agent', agent);
+            //         process.exit(1);
+            //     }
+            // }
+            // return;
+
             for (const job of this.allBackupAgentJobs) {
+                console.log("saving backup agent job", job.instanceUid)
                 if (job.organizationUid !== company.instanceUid) {
                     continue;
                 }
@@ -91,11 +138,18 @@ export default class VacStore {
                     console.warn("skipped backup agent for job", job.instanceUid, 'because it has no valid agent job');
                     continue;
                 }
+                // if (backupAgentUid === '29723000-655b-11ea-8000-ac1f6bfe8c10') {
+                //     console.log('backup agent job', job);
+                //     // const objects = await vac.infrastructure.getBackupAgentJob(job.instanceUid);
+                //     // console.log('objects', objects)
+                //     process.exit(1);
+                // }
                 const backupAgent = this.findBackupAgent(backupAgentUid);
                 if (!backupAgent) {
                     console.warn("no backup agent for job", job.instanceUid);
                     continue;
                 }
+                // backupAgent.
                 // backupAgent.site
                 // totalJobsCount.
                 // const backupAgentRes = await vac.infrastructure.getBackupAgent(job.backupAgentUid);
@@ -285,6 +339,10 @@ export default class VacStore {
                 }
 
                 for (const pvm of this.allProtectedComputersManagedByConsole) {
+                    // if (pvm.backupAgentUid === '60a70bf8-6449-6c66-9cea-b84d9cb9fb7e') {
+                    //     console.log('pvm WK301', pvm)
+                    //     process.exit(1);
+                    // }
                     if (pvm.organizationUid !== loc.organizationUid) {
                         continue
                     }
@@ -316,27 +374,34 @@ export default class VacStore {
 
                     console.log("asset site saved", assetSite.assetId, assetSite.siteId);
 
-                    // vac.infrastructure.getBackup
 
-                    // const protectionId = backupServerJobProtectionId(pvm.); // TODO: use other types of jobs
+                    const { backupAgentUid } = pvm;
+                    if (backupAgentUid) {
+                        const backupJobs = this.findBackupAgentJobsOfAgent(backupAgentUid);
 
-                    // const protection = await ProtectionEntity.findOne(protectionId)
-                    // if (protection) {
-                    //     let assetProtection = await AssetProtectionEntity.findOne({
-                    //         protectionId,
-                    //         assetId,
-                    //     });
-                    //     if (!assetProtection) {
-                    //         assetProtection = new AssetProtectionEntity()
-                    //         assetProtection.createdAt = new Date()
-                    //         assetProtection.assetProtectionId = assetProtectionId(assetId, protectionId)
-                    //     }
-                    //     assetProtection.protectionId = protectionId;
-                    //     assetProtection.assetId = assetId;
-                    //     await assetProtection.save();
-                    // } else {
-                    //     console.log("missing protection", pvm.jobUid, "for protected virtual machine", pvm.instanceUid)
-                    // }
+                        for (const backupJob of backupJobs) {
+                            const backupAgentJobUid = backupJob.instanceUid;
+                            const protectionId = backupAgentJobProtectionId(backupAgentJobUid);
+
+                            const protection = await ProtectionEntity.findOne(protectionId)
+                            if (protection) {
+                                let assetProtection = await AssetProtectionEntity.findOne({
+                                    protectionId,
+                                    assetId,
+                                });
+                                if (!assetProtection) {
+                                    assetProtection = new AssetProtectionEntity()
+                                    assetProtection.createdAt = new Date()
+                                    assetProtection.assetProtectionId = assetProtectionId(assetId, protectionId)
+                                }
+                                assetProtection.protectionId = protectionId;
+                                assetProtection.assetId = assetId;
+                                await assetProtection.save();
+                            } else {
+                                console.log("missing protection", backupAgentUid, "for protected virtual machine", pvm.backupAgentUid)
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -413,24 +478,26 @@ export default class VacStore {
     }
 }
 
-async function loadAllResources<T>(loadPage: (params: { offset: number, limit: number }) => Promise<HttpResponse<{ meta?: ResponseMetadata; data?: T[]; errors?: ResponseError[] }, ErrorResponse>>): Promise<T[]> {
+async function loadAllResources<T>(loadPage: (params: { offset?: number, limit: number }) => Promise<HttpResponse<{ meta?: ResponseMetadata; data?: T[]; errors?: ResponseError[] }, ErrorResponse>>): Promise<T[]> {
     let all: T[] = [];
+    let offset: number | undefined;
     while (true) {
-        let offset = all.length;
-        console.log('fetching with offset', offset);
+        // console.log('fetching with offset', offset);
         const response = await loadPage({
-            limit: 300,
+            limit: 100,
             offset,
         });
         if (response.error) {
             throw new Error(`failed to fetch page from vac, ${response.error}`);
         }
+        // console.log('response meta', response.data.meta)
         const result = response.data.data!;
+        all = [...all, ...result];
+        offset = all.length;
         if (result.length === 0) {
-            console.log('no more items in result')
+            // console.log('no more items in result')
             break;
         }
-        all = [...all, ...result];
     }
     return all;
 }
