@@ -1,10 +1,8 @@
 import { Entity, Column, PrimaryColumn, BaseEntity, ManyToOne, JoinColumn, OneToMany } from "typeorm";
 import { ProtectedComputerManagedByBackupServer, ProtectedComputerManagedByConsole, ProtectedVirtualMachine } from "../../externalServices/vac/vac-sdk";
 import { Vms } from "../../externalServices/zerto/zerto-sdk";
-import { ProtectedComputer } from "../../repos/frontend/src/client/sdk";
 import AssetProtectionEntity from "./AssetProtection";
 import AssetSiteEntity from "./AssetSite";
-import OrganizationEntity from "./Organization";
 
 @Entity({ name: "assets" })
 export default class AssetEntity extends BaseEntity {

@@ -266,12 +266,12 @@ export default class VacStore {
                     if (job.locationUid != loc.instanceUid) {
                         continue;
                     }
-                    if (job.instanceUid === '7ea4e18d-37a5-4758-8884-0552268d084f') {
-                        console.log("job", job);
-                        const objects = this.findBackupServerJobObjectsOfAgent(job.instanceUid);
-                        console.log("objects", objects);
-                        process.exit(1);
-                    }
+                    // if (job.instanceUid === '7ea4e18d-37a5-4758-8884-0552268d084f') {
+                    //     console.log("job", job);
+                    //     const objects = this.findBackupServerJobObjectsOfAgent(job.instanceUid);
+                    //     console.log("objects", objects);
+                    //     process.exit(1);
+                    // }
                     const protectionId = backupServerJobProtectionId(job.instanceUid);
                     let protection = await ProtectionEntity.findOne(protectionId);
                     if (!protection) {
