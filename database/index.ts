@@ -38,7 +38,7 @@ export const initDatabase = () => createConnection({
     "type": "postgres",
     "url": process.env.DATABASE_URL,
     "synchronize": false,
-    // "logging": true,
+    "logging": true,
     "migrationsRun": true,
     "entities": [
         UserEntity,

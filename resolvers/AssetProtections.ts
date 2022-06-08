@@ -21,13 +21,17 @@ export class AssetProtection {
 class AssetProtectionsResolver {
   @FieldResolver()
   async protection(@Root() assetProtection: AssetProtectionEntity) {
-    const protection = await ProtectionEntity.findOne(assetProtection.protectionId)
+    const protection = await ProtectionEntity.findOneBy({
+      protectionId: assetProtection.protectionId
+    })
     return protection;
   }
 
   @FieldResolver()
   async asset(@Root() assetProtection: AssetProtectionEntity) {
-    const asset = await AssetEntity.findOne(assetProtection.assetId)
+    const asset = await AssetEntity.findOneBy({
+      assetId: assetProtection.assetId
+    })
     return asset;
   }
 }

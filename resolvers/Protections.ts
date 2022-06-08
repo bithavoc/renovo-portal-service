@@ -223,12 +223,20 @@ class ProtectionsResolver {
   @Query(returns => [Protection])
   async getProtections(
     @Ctx("token") token?: TokenEntity,
-    // @Ctx("vacStore") vac?: VacStore,
+    @Arg("sitesIdentifiers", type => [String], { nullable: true }) siteIdentifiers?: string[],
   ): Promise<Protection[]> {
     if (!token) {
       throw new ForbiddenError("access denied")
     }
-    return await ProtectionEntity.createQueryBuilder("prot").leftJoinAndSelect('prot.sites', 'sites').getMany()
+    let query = ProtectionEntity.createQueryBuilder("prot");
+    if (siteIdentifiers) {
+      console.log('querying by sites', siteIdentifiers);
+      query = query.leftJoin('prot.sites', 'sites');
+      query = query.where('sites.siteId IN (:...siteIdentifiers)', {
+        siteIdentifiers
+      })
+    }
+    return await query.getMany();
   }
 
   @FieldResolver()

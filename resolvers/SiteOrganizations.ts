@@ -31,13 +31,17 @@ export class SiteOrganization {
 class SiteOrganizationsResolver {
   @FieldResolver()
   async site(@Root() entity: SiteOrganizationEntity) {
-    const site = await SiteEntity.findOne(entity.siteId)
+    const site = await SiteEntity.findOneBy({
+      siteId: entity.siteId
+    })
     return site;
   }
 
   @FieldResolver()
   async organization(@Root() entity: SiteOrganizationEntity) {
-    const org = await OrganizationEntity.findOne(entity.organizationId)
+    const org = await OrganizationEntity.findOneBy({
+      id: entity.organizationId
+    })
     return org;
   }
 }

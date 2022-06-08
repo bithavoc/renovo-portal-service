@@ -55,7 +55,9 @@ class OrganizationMembersResolver {
       throw new ForbiddenError("user required");
     }
 
-    const organization = await OrganizationEntity.findOneOrFail(organizationId)
+    const organization = await OrganizationEntity.findOneByOrFail({
+      id: organizationId
+    })
     const user = await UserEntity.findByIdOrEmailOrFail(userIdOrEmail)
 
     const existing = await OrganizationMemberEntity.createQueryBuilder('member').where('member.organization_id = :organizationId AND member.user_id = :userId', {

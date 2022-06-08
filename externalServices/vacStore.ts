@@ -131,7 +131,9 @@ export default class VacStore {
         console.log("allProtectedComputersManagedByConsole", this.allProtectedComputersManagedByConsole.length);
         for (const loc of this.allLocations) {
             const siteId = locationSiteId(loc.instanceUid);
-            let site = await SiteEntity.findOne(siteId);
+            let site = await SiteEntity.findOneBy({
+                siteId
+            });
             if (!site) {
                 site = new SiteEntity()
                 site.createdAt = new Date()
@@ -146,7 +148,7 @@ export default class VacStore {
 
         for (const company of this.allCompanies) {
             const orgId = companyOrganizationId(company.instanceUid);
-            let org = await OrganizationEntity.findOne(orgId);
+            let org = await OrganizationEntity.findOneBy({ id: orgId });
             if (!org) {
                 org = new OrganizationEntity()
                 org.id = orgId;
@@ -202,7 +204,7 @@ export default class VacStore {
                 //     continue;
                 // }
                 const protectionId = backupAgentJobProtectionId(job.instanceUid);
-                let protection = await ProtectionEntity.findOne(protectionId);
+                let protection = await ProtectionEntity.findOneBy({ protectionId });
                 if (!protection) {
                     protection = new ProtectionEntity()
                     protection.protectionId = protectionId;
@@ -226,7 +228,7 @@ export default class VacStore {
                         continue;
                     }
                     const siteId = locationSiteId(managementAgent.locationUid);
-                    let protectionSite = await ProtectionSiteEntity.findOne({
+                    let protectionSite = await ProtectionSiteEntity.findOneBy({
                         protectionId: protectionId,
                         siteId,
                     });
@@ -273,7 +275,7 @@ export default class VacStore {
                     //     process.exit(1);
                     // }
                     const protectionId = backupServerJobProtectionId(job.instanceUid);
-                    let protection = await ProtectionEntity.findOne(protectionId);
+                    let protection = await ProtectionEntity.findOneBy({ protectionId });
                     if (!protection) {
                         protection = new ProtectionEntity()
                         protection.protectionId = protectionId;
@@ -288,7 +290,7 @@ export default class VacStore {
                     console.log("backup server job saved", protection.title)
 
                     const siteId = locationSiteId(job.locationUid);
-                    let protectionSite = await ProtectionSiteEntity.findOne({
+                    let protectionSite = await ProtectionSiteEntity.findOneBy({
                         protectionId: protectionId,
                         siteId,
                     });
@@ -310,7 +312,7 @@ export default class VacStore {
                         continue
                     }
                     const assetId = vmAssetId(pvm.instanceUid);
-                    let asset = await AssetEntity.findOne(assetId);
+                    let asset = await AssetEntity.findOneBy({ assetId });
                     if (!asset) {
                         asset = new AssetEntity()
                         asset.assetId = assetId;
@@ -325,7 +327,7 @@ export default class VacStore {
                     await asset.save();
                     console.log("asset saved", asset.title)
 
-                    let assetSite = await AssetSiteEntity.findOne({
+                    let assetSite = await AssetSiteEntity.findOneBy({
                         siteId: siteId,
                         assetId: assetId,
                     });
@@ -342,9 +344,9 @@ export default class VacStore {
 
                     const protectionId = backupServerJobProtectionId(pvm.jobUid); // TODO: use other types of jobs
 
-                    const protection = await ProtectionEntity.findOne(protectionId)
+                    const protection = await ProtectionEntity.findOneBy({ protectionId })
                     if (protection) {
-                        let assetProtection = await AssetProtectionEntity.findOne({
+                        let assetProtection = await AssetProtectionEntity.findOneBy({
                             protectionId,
                             assetId,
                         });
@@ -370,7 +372,7 @@ export default class VacStore {
                         continue
                     }
                     const assetId = protectedComputerAssetId(pvm.backupAgentUid);
-                    let asset = await AssetEntity.findOne(assetId);
+                    let asset = await AssetEntity.findOneBy({ assetId });
                     if (!asset) {
                         asset = new AssetEntity()
                         asset.assetId = assetId;
@@ -383,7 +385,7 @@ export default class VacStore {
                     await asset.save();
                     console.log("allProtectedComputersManagedByConsole asset saved", asset.title, asset.assetId)
 
-                    let assetSite = await AssetSiteEntity.findOne({
+                    let assetSite = await AssetSiteEntity.findOneBy({
                         siteId: siteId,
                         assetId: assetId,
                     });
@@ -406,9 +408,9 @@ export default class VacStore {
                             const backupAgentJobUid = backupJob.instanceUid;
                             const protectionId = backupAgentJobProtectionId(backupAgentJobUid);
 
-                            const protection = await ProtectionEntity.findOne(protectionId)
+                            const protection = await ProtectionEntity.findOneBy({ protectionId })
                             if (protection) {
-                                let assetProtection = await AssetProtectionEntity.findOne({
+                                let assetProtection = await AssetProtectionEntity.findOneBy({
                                     protectionId,
                                     assetId,
                                 });
@@ -435,7 +437,7 @@ export default class VacStore {
                         continue
                     }
                     const assetId = protectedComputerAssetId(pvm.instanceUid);
-                    let asset = await AssetEntity.findOne(assetId);
+                    let asset = await AssetEntity.findOneBy({ assetId });
                     if (!asset) {
                         asset = new AssetEntity()
                         asset.assetId = assetId;
@@ -448,7 +450,7 @@ export default class VacStore {
                     await asset.save();
                     console.log("allProtectedComputersManagedByBackupServer asset saved", asset.title, asset.assetId)
 
-                    let assetSite = await AssetSiteEntity.findOne({
+                    let assetSite = await AssetSiteEntity.findOneBy({
                         siteId: siteId,
                         assetId: assetId,
                     });
@@ -474,9 +476,9 @@ export default class VacStore {
                         for (const backupAgentJobUid of backupJobs) {
                             const protectionId = backupServerJobProtectionId(backupAgentJobUid);
 
-                            const protection = await ProtectionEntity.findOne(protectionId)
+                            const protection = await ProtectionEntity.findOneBy({ protectionId })
                             if (protection) {
-                                let assetProtection = await AssetProtectionEntity.findOne({
+                                let assetProtection = await AssetProtectionEntity.findOneBy({
                                     protectionId,
                                     assetId,
                                 });

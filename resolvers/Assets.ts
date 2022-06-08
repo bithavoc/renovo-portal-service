@@ -69,9 +69,17 @@ export class Asset {
 class AssetsResolver {
   @Query(returns => [Asset])
   async getAssets(
-    // @Arg("siteId") siteId: string,
+    @Arg("sitesIdentifiers", type => [String], { nullable: true }) siteIdentifiers?: string[],
   ): Promise<Asset[]> {
-    return await AssetEntity.createQueryBuilder("asset").leftJoinAndSelect('asset.sites', 'sites').leftJoinAndSelect('asset.protections', 'protections').getMany()
+    const query = AssetEntity.createQueryBuilder("asset")
+    if (siteIdentifiers) {
+      console.log('querying by sites', siteIdentifiers);
+      query.leftJoin('asset.sites', 'sites');
+      query.where('sites.siteId IN (:...siteIdentifiers)', {
+        siteIdentifiers
+      })
+    }
+    return await query.getMany();
   }
 
   @Query(returns => Asset)
