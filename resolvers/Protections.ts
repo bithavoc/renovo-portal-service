@@ -1,5 +1,5 @@
 import { ForbiddenError } from "apollo-server";
-import { Arg, Ctx, Field, FieldResolver, ID, ObjectType, Query, Resolver, Root } from "type-graphql";
+import { Arg, Ctx, Field, FieldResolver, ID, InputType, ObjectType, Query, Resolver, Root } from "type-graphql";
 import AssetProtectionEntity from "../database/entity/AssetProtection";
 import ProtectionEntity from "../database/entity/Protection";
 import ProtectionSiteEntity from "../database/entity/ProtectionSite";
@@ -218,13 +218,34 @@ export class Protection {
   zertoMeta?: ZertoProtectionVpg
 }
 
+@InputType()
+export class PageRequest {
+  @Field()
+  itemsPerPage: number;
+  @Field()
+  index: number;
+}
+
+@ObjectType()
+export class ProtectionsPage {
+  @Field(() => [Protection])
+  items: Protection[];
+
+  @Field()
+  totalItems: number;
+
+  @Field()
+  totalPages: number;
+}
+
 @Resolver(Protection)
 class ProtectionsResolver {
-  @Query(returns => [Protection])
+  @Query(returns => ProtectionsPage)
   async getProtections(
     @Ctx("token") token?: TokenEntity,
     @Arg("sitesIdentifiers", type => [String], { nullable: true }) siteIdentifiers?: string[],
-  ): Promise<Protection[]> {
+    @Arg("page", type => PageRequest, { nullable: true }) pageRequest?: PageRequest,
+  ): Promise<ProtectionsPage> {
     if (!token) {
       throw new ForbiddenError("access denied")
     }
@@ -236,7 +257,22 @@ class ProtectionsResolver {
         siteIdentifiers
       })
     }
-    return await query.getMany();
+    const page = new ProtectionsPage()
+    if (pageRequest) {
+      if (pageRequest.index > 0) {
+        query.skip(pageRequest.index * pageRequest.itemsPerPage)
+      }
+      query.take(pageRequest.itemsPerPage)
+    }
+    const [results, total] = await query.getManyAndCount()
+    page.totalItems = total;
+    if (pageRequest) {
+      page.totalPages = Math.ceil(page.totalItems / pageRequest.itemsPerPage);
+    } else {
+      page.totalPages = 1;
+    }
+    page.items = results;
+    return page;
   }
 
   @FieldResolver()
