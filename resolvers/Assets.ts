@@ -4,6 +4,9 @@ import AssetProtectionEntity from "../database/entity/AssetProtection";
 import AssetSiteEntity from "../database/entity/AssetSite";
 import { AssetProtection } from "./AssetProtections";
 import { AssetSite } from "./AssetSites";
+import { Page } from "./pagination/page";
+import { Paginate } from "./pagination/paginator";
+import { PageRequest } from "./pagination/request";
 
 @ObjectType()
 export class ZertoAssetMeta {
@@ -64,22 +67,32 @@ export class Asset {
   @Field({ nullable: true })
   veeamMeta?: VeeamAssetMeta
 }
+@ObjectType()
+export class AssetsPage extends Page<Asset> {
+  @Field(() => [Asset])
+  items: Asset[];
+}
+
 
 @Resolver(Asset)
 class AssetsResolver {
-  @Query(returns => [Asset])
+  @Query(returns => AssetsPage)
   async getAssets(
     @Arg("sitesIdentifiers", type => [String], { nullable: true }) siteIdentifiers?: string[],
-  ): Promise<Asset[]> {
-    const query = AssetEntity.createQueryBuilder("asset")
-    if (siteIdentifiers) {
-      console.log('querying by sites', siteIdentifiers);
-      query.leftJoin('asset.sites', 'sites');
-      query.where('sites.siteId IN (:...siteIdentifiers)', {
-        siteIdentifiers
-      })
-    }
-    return await query.getMany();
+    @Arg("page", type => PageRequest, { nullable: true }) pageRequest?: PageRequest,
+  ): Promise<AssetsPage> {
+    const page = await Paginate(pageRequest, () => {
+      const query = AssetEntity.createQueryBuilder("asset")
+      if (siteIdentifiers) {
+        console.log('querying by sites', siteIdentifiers);
+        query.leftJoin('asset.sites', 'sites');
+        query.where('sites.siteId IN (:...siteIdentifiers)', {
+          siteIdentifiers
+        })
+      }
+      return query;
+    }, () => new AssetsPage())
+    return page;
   }
 
   @Query(returns => Asset)
