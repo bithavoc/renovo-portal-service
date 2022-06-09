@@ -40,7 +40,6 @@ async function bootstrap() {
 
       return {
         token,
-        // vacStore
       };
     },
   });

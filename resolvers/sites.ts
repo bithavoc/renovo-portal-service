@@ -4,6 +4,9 @@ import OrganizationEntity from "../database/entity/Organization";
 import { SiteOrganization } from "./SiteOrganizations";
 import { Organization } from "./organizations";
 import SiteOrganizationEntity from "../database/entity/SiteOrganization";
+import { Page } from "./pagination/page";
+import { Paginate } from "./pagination/paginator";
+import { PageRequest } from "./pagination/request";
 
 @ObjectType()
 export class SiteVeeamMeta {
@@ -104,6 +107,13 @@ export class Site {
   zertoMeta?: SiteZertoMeta;
 }
 
+
+@ObjectType()
+export class SitesPage extends Page<Site> {
+  @Field(() => [Site])
+  items: Site[];
+}
+
 @Resolver(Site)
 class SitesResolver implements ResolverInterface<Site> {
   @FieldResolver()
@@ -113,9 +123,14 @@ class SitesResolver implements ResolverInterface<Site> {
     }).getMany();
   }
 
-  @Query(returns => [Site])
-  async getSites(): Promise<Site[]> {
-    return await SiteEntity.createQueryBuilder("site").leftJoinAndSelect('site.organizations', 'orgs').getMany()
+  @Query(returns => SitesPage)
+  async getSites(
+    @Arg("page", type => PageRequest, { nullable: true }) pageRequest?: PageRequest,
+  ): Promise<SitesPage> {
+    const page = await Paginate(pageRequest, () => {
+      return SiteEntity.createQueryBuilder("site").leftJoinAndSelect('site.organizations', 'orgs')
+    }, () => new SitesPage())
+    return page;
   }
 
   @Query(returns => Site, { nullable: true })
