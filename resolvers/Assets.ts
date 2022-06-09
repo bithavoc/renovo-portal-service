@@ -80,6 +80,7 @@ class AssetsResolver {
   async getAssets(
     @Arg("sitesIdentifiers", type => [String], { nullable: true }) siteIdentifiers?: string[],
     @Arg("page", type => PageRequest, { nullable: true }) pageRequest?: PageRequest,
+    @Arg("titleContains", { nullable: true }) titleContains?: string,
   ): Promise<AssetsPage> {
     const page = await Paginate(pageRequest, () => {
       const query = AssetEntity.createQueryBuilder("asset")
@@ -88,6 +89,11 @@ class AssetsResolver {
         query.leftJoin('asset.sites', 'sites');
         query.where('sites.siteId IN (:...siteIdentifiers)', {
           siteIdentifiers
+        })
+      }
+      if (titleContains) {
+        query.where('asset.title ILIKE :titleTerm', {
+          titleTerm: `%${titleContains}%`
         })
       }
       return query;

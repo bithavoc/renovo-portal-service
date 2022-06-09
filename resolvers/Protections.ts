@@ -234,6 +234,7 @@ class ProtectionsResolver {
     @Ctx("token") token?: TokenEntity,
     @Arg("sitesIdentifiers", type => [String], { nullable: true }) siteIdentifiers?: string[],
     @Arg("page", type => PageRequest, { nullable: true }) pageRequest?: PageRequest,
+    @Arg("titleContains", { nullable: true }) titleContains?: string,
   ): Promise<ProtectionsPage> {
     if (!token) {
       throw new ForbiddenError("access denied")
@@ -245,6 +246,11 @@ class ProtectionsResolver {
         query = query.leftJoin('prot.sites', 'sites');
         query = query.where('sites.siteId IN (:...siteIdentifiers)', {
           siteIdentifiers
+        })
+      }
+      if (titleContains) {
+        query.where('prot.title ILIKE :titleTerm', {
+          titleTerm: `%${titleContains}%`
         })
       }
       return query;
