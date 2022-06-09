@@ -6,6 +6,7 @@ import ProtectionSiteEntity from "../database/entity/ProtectionSite";
 import TokenEntity from "../database/entity/token";
 import { AssetProtection } from "./AssetProtections";
 import { Page } from "./pagination/page";
+import { Paginate } from "./pagination/paginator";
 import { PageRequest } from "./pagination/request";
 import { ProtectionSite } from "./ProtectionSites";
 
@@ -237,29 +238,17 @@ class ProtectionsResolver {
     if (!token) {
       throw new ForbiddenError("access denied")
     }
-    let query = ProtectionEntity.createQueryBuilder("prot");
-    if (siteIdentifiers) {
-      console.log('querying by sites', siteIdentifiers);
-      query = query.leftJoin('prot.sites', 'sites');
-      query = query.where('sites.siteId IN (:...siteIdentifiers)', {
-        siteIdentifiers
-      })
-    }
-    const page = new ProtectionsPage()
-    if (pageRequest) {
-      if (pageRequest.index > 0) {
-        query.skip(pageRequest.index * pageRequest.itemsPerPage)
+    const page = await Paginate(pageRequest, () => {
+      let query = ProtectionEntity.createQueryBuilder("prot");
+      if (siteIdentifiers) {
+        console.log('querying by sites', siteIdentifiers);
+        query = query.leftJoin('prot.sites', 'sites');
+        query = query.where('sites.siteId IN (:...siteIdentifiers)', {
+          siteIdentifiers
+        })
       }
-      query.take(pageRequest.itemsPerPage)
-    }
-    const [results, total] = await query.getManyAndCount()
-    page.totalItems = total;
-    if (pageRequest) {
-      page.totalPages = Math.ceil(page.totalItems / pageRequest.itemsPerPage);
-    } else {
-      page.totalPages = 1;
-    }
-    page.items = results;
+      return query;
+    }, () => new ProtectionsPage())
     return page;
   }
 
