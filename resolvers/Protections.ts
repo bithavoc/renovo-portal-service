@@ -5,6 +5,8 @@ import ProtectionEntity from "../database/entity/Protection";
 import ProtectionSiteEntity from "../database/entity/ProtectionSite";
 import TokenEntity from "../database/entity/token";
 import { AssetProtection } from "./AssetProtections";
+import { Page } from "./pagination/page";
+import { PageRequest } from "./pagination/request";
 import { ProtectionSite } from "./ProtectionSites";
 
 @ObjectType()
@@ -218,24 +220,10 @@ export class Protection {
   zertoMeta?: ZertoProtectionVpg
 }
 
-@InputType()
-export class PageRequest {
-  @Field()
-  itemsPerPage: number;
-  @Field()
-  index: number;
-}
-
 @ObjectType()
-export class ProtectionsPage {
+export class ProtectionsPage extends Page<Protection> {
   @Field(() => [Protection])
   items: Protection[];
-
-  @Field()
-  totalItems: number;
-
-  @Field()
-  totalPages: number;
 }
 
 @Resolver(Protection)
