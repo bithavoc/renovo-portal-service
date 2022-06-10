@@ -8,7 +8,7 @@ import ProtectionSiteEntity from "../database/entity/ProtectionSite";
 import SiteEntity from "../database/entity/Site";
 import SiteOrganizationEntity from "../database/entity/SiteOrganization";
 import { assetProtectionId } from "./identifiers";
-import { Api, BackupAgent, BackupAgentJob, BackupServer, BackupServerAgentJobObject, BackupServerJob, CloudAgent, Company, ErrorResponse, HttpResponse, ManagementAgent, OrganizationLocation, ProtectedComputerManagedByBackupServer, ProtectedComputerManagedByConsole, ProtectedVirtualMachine, ProtectedVirtualMachineBackupRestorePoint, ResponseError, ResponseMetadata } from "./vac/vac-sdk";
+import { Api, BackupAgent, BackupAgentJob, BackupRepository, BackupServer, BackupServerAgentJobObject, BackupServerJob, CloudAgent, Company, ErrorResponse, HttpResponse, ManagementAgent, OrganizationLocation, ProtectedComputerManagedByBackupServer, ProtectedComputerManagedByConsole, ProtectedVirtualMachine, ProtectedVirtualMachineBackupRestorePoint, ResponseError, ResponseMetadata } from "./vac/vac-sdk";
 
 const createVeamClient = (token: string) => new Api({
     baseUrl: "https://vac.renovodata.com/api/v3",
@@ -26,6 +26,7 @@ const vmAssetId = (vmInstanceId: string) => `veeamvm_${vmInstanceId}`;
 const backupServerJobProtectionId = (jobId: string) => `veeambsj_${jobId}`;
 const protectedComputerAssetId = (protectedComputerUid: string) => `veeampc_${protectedComputerUid}`;
 const backupAgentJobProtectionId = (jobId: string) => `veeambaj_${jobId}`;
+const backupRepositorySiteId = (repoId: string) => `veeambr_${repoId}`;
 
 export default class VacStore {
     allBackupServerJobs: BackupServerJob[] = [];
@@ -67,6 +68,37 @@ export default class VacStore {
     findBackupServerJobObjectsWithAgent(agentUid: string): BackupServerAgentJobObject[] | undefined {
         return this.allBackupServerAgentJobObjects.filter(j => j.agentUid === agentUid);
     }
+    async ensureBackupRepositorySite(organizationId: string, repo: BackupRepository): Promise<SiteEntity> {
+        const siteId = backupRepositorySiteId(repo.instanceUid);
+        let site = await SiteEntity.findOneBy({
+            siteId
+        });
+        if (!site) {
+            site = new SiteEntity()
+            site.createdAt = new Date()
+        }
+        site.siteId = siteId;
+        site.title = repo.name || repo.hostName;
+        // site.veeamMeta = loc;
+        await site.save();
+        console.log("saved backup repository site", site.title);
+        // TODO: fix this dup with the site importer
+        let siteOrg = await SiteOrganizationEntity.createQueryBuilder('so').where({
+            siteId,
+            organizationId,
+        }).getOne();
+        console.log('site org', siteOrg)
+        if (!siteOrg) {
+            siteOrg = new SiteOrganizationEntity();
+            console.log('creating new site org')
+            siteOrg.siteOrganizationId = uuid();
+            siteOrg.createdAt = new Date();
+        }
+        siteOrg.organizationId = organizationId;
+        siteOrg.siteId = siteId;
+        await siteOrg.save();
+        return site;
+    }
     async load() {
         console.log("vac store loading")
         const vac = createVeamClient(process.env.VAC_AT);
@@ -89,6 +121,20 @@ export default class VacStore {
 
         this.allBackupServerAgentJobObjects = await loadAllResources(params => vac.infrastructure.getBackupServerAgentJobsObjects({ ...params }));
         console.log("allBackupServerAgentJobObjects", this.allBackupServerAgentJobObjects.length);
+
+        const backupRepositories = await loadAllResources(params => vac.infrastructure.getBackupRepositories({ ...params }));
+        console.log("backupRepositories", backupRepositories.length);
+
+        // console.log("80e64fed-d1e4-46b7-9423-3fd9d9443858", backupRepositories.find(br => br.instanceUid === '80e64fed-d1e4-46b7-9423-3fd9d9443858'));
+        // return;
+
+        // for (const br of backupRepositories) {
+        //     if (br.name === 'RenovoCloud') {
+        //         console.log("backup repository", br);
+        //     }
+        // }
+
+        // return;
 
         // for (const agent of this.allBackupAgents) {
         //     console.log("saving backup agent", agent.instanceUid, agent.name, agent.operationMode)
@@ -268,10 +314,31 @@ export default class VacStore {
                     if (job.locationUid != loc.instanceUid) {
                         continue;
                     }
-                    // if (job.instanceUid === '7ea4e18d-37a5-4758-8884-0552268d084f') {
-                    //     console.log("job", job);
-                    //     const objects = this.findBackupServerJobObjectsOfAgent(job.instanceUid);
-                    //     console.log("objects", objects);
+                    const backupServer = this.findBackupServer(job.backupServerUid);
+                    const serverReposRes = await vac.infrastructure.getBackupRepositoriesByServer(backupServer.instanceUid);
+                    const serverRepos = serverReposRes.data.data;
+
+                    const serverReposSites: SiteEntity[] = [];
+                    for (const serverRepo of serverRepos) {
+                        serverReposSites.push(await this.ensureBackupRepositorySite(orgId, serverRepo))
+                    }
+                    const findServerRepo = (destination: string) => serverReposSites.find(s => s.title === destination);
+
+
+                    // if (job.instanceUid === 'e9dd851a-743a-4011-b16d-79925826181d') {
+                    //     // const backupServerJObRes = await vac.infrastructure.getBackupServer(job.backupServerUid)
+                    //     // const backupServer = backupServerJObRes.data.data;
+                    //     // console.log("backup server job", backupServer);
+
+                    //     const backupRepos = backupRepositories.filter(br => br.backupServerUid === backupServer.instanceUid);
+                    //     console.log("backupRepos", backupRepos);
+                    //     console.log("serverRepos", serverRepos);
+
+                    //     // const manAgentRes = await vac.infrastructure.getManagementAgent(backupServer.managementAgentUid)
+                    //     // const manAgent = manAgentRes.data.data;
+                    //     // console.log("man agent", manAgent);
+                    //     // const objects = this.findBackupServerJobObjectsOfAgent(job.instanceUid);
+                    //     // console.log("objects", objects);
                     //     process.exit(1);
                     // }
                     const protectionId = backupServerJobProtectionId(job.instanceUid);
@@ -303,7 +370,26 @@ export default class VacStore {
                     protectionSite.purpose = 'protection';
                     await protectionSite.save();
 
-                    console.log("protection site saved", protectionSite.protectionId, protectionSite.siteId);
+                    console.log("protection site(protection) saved", protectionSite.protectionId, protectionSite.siteId);
+
+                    const destinationRepoSite = findServerRepo(job.destination);
+                    if (destinationRepoSite) {
+                        const { siteId } = destinationRepoSite;
+                        let protectionSite = await ProtectionSiteEntity.findOneBy({
+                            protectionId: protectionId,
+                            siteId,
+                        });
+                        if (!protectionSite) {
+                            protectionSite = new ProtectionSiteEntity()
+                            protectionSite.createdAt = new Date()
+                        }
+                        protectionSite.siteId = siteId;
+                        protectionSite.protectionId = protectionId;
+                        protectionSite.purpose = 'recovery';
+                        await protectionSite.save();
+
+                        console.log("protection site(recovery) saved", protectionSite.protectionId, protectionSite.siteId);
+                    }
                 }
 
 
@@ -467,7 +553,7 @@ export default class VacStore {
                     const { backupServerUid, sourceInstanceUid } = pvm;
                     console.log('backupServerUid', backupServerUid, 'sourceInstanceUid', sourceInstanceUid);
                     if (backupServerUid && sourceInstanceUid) {
-                        const backupServer = this.findBackupServer(backupServerUid);
+                        // const backupServer = this.findBackupServer(backupServerUid);
                         const objectsOfAgent = this.findBackupServerJobObjectsWithAgent(sourceInstanceUid);
 
                         const backupJobs = objectsOfAgent.map(o => o.jobUid);
