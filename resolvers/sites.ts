@@ -1,4 +1,4 @@
-import { Arg, Field, FieldResolver, ID, ObjectType, Query, Resolver, ResolverInterface, Root } from "type-graphql";
+import { Arg, Ctx, Field, FieldResolver, ID, ObjectType, Query, Resolver, ResolverInterface, Root } from "type-graphql";
 import SiteEntity from "../database/entity/Site";
 import OrganizationEntity from "../database/entity/Organization";
 import { SiteOrganization } from "./SiteOrganizations";
@@ -7,6 +7,8 @@ import SiteOrganizationEntity from "../database/entity/SiteOrganization";
 import { Page } from "./pagination/page";
 import { Paginate } from "./pagination/paginator";
 import { PageRequest } from "./pagination/request";
+import TokenEntity from "../database/entity/token";
+import { ForbiddenError } from "apollo-server";
 
 @ObjectType()
 export class SiteVeeamMeta {
@@ -125,8 +127,12 @@ class SitesResolver implements ResolverInterface<Site> {
 
   @Query(returns => SitesPage)
   async getSites(
+    @Ctx("token") token: TokenEntity | null,
     @Arg("page", type => PageRequest, { nullable: true }) pageRequest?: PageRequest,
   ): Promise<SitesPage> {
+    if (!token) {
+      throw new ForbiddenError("access denied")
+    }
     const page = await Paginate(pageRequest, () => {
       return SiteEntity.createQueryBuilder("site").leftJoinAndSelect('site.organizations', 'orgs')
     }, () => new SitesPage())
@@ -135,8 +141,12 @@ class SitesResolver implements ResolverInterface<Site> {
 
   @Query(returns => Site, { nullable: true })
   async getSite(
+    @Ctx("token") token: TokenEntity | null,
     @Arg("siteId") siteId: string,
   ): Promise<Site | null> {
+    if (!token) {
+      throw new ForbiddenError("access denied")
+    }
     return await SiteEntity.createQueryBuilder("st").where({
       siteId,
     }).getOne()

@@ -30,12 +30,12 @@ async function bootstrap() {
         tokenCode = tokenParts[1];
       }
 
-      const token = await TokenEntity.findOne({
+      const token = (await TokenEntity.findOne({
         where: {
           token: tokenCode,
         },
         relations: ["user"],
-      })
+      })) || null;
       console.log("token", token);
 
       return {

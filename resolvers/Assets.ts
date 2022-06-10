@@ -1,7 +1,9 @@
-import { Arg, Field, FieldResolver, ID, ObjectType, Query, Resolver, Root } from "type-graphql";
+import { ForbiddenError } from "apollo-server";
+import { Arg, Ctx, Field, FieldResolver, ID, ObjectType, Query, Resolver, Root } from "type-graphql";
 import AssetEntity from "../database/entity/Asset";
 import AssetProtectionEntity from "../database/entity/AssetProtection";
 import AssetSiteEntity from "../database/entity/AssetSite";
+import TokenEntity from "../database/entity/token";
 import { AssetProtection } from "./AssetProtections";
 import { AssetSite } from "./AssetSites";
 import { Page } from "./pagination/page";
@@ -78,10 +80,14 @@ export class AssetsPage extends Page<Asset> {
 class AssetsResolver {
   @Query(returns => AssetsPage)
   async getAssets(
+    @Ctx("token") token?: TokenEntity | null,
     @Arg("sitesIdentifiers", type => [String], { nullable: true }) siteIdentifiers?: string[],
     @Arg("page", type => PageRequest, { nullable: true }) pageRequest?: PageRequest,
     @Arg("titleContains", { nullable: true }) titleContains?: string,
   ): Promise<AssetsPage> {
+    if (!token) {
+      throw new ForbiddenError("access denied")
+    }
     const page = await Paginate(pageRequest, () => {
       const query = AssetEntity.createQueryBuilder("asset")
       if (siteIdentifiers) {
@@ -101,10 +107,14 @@ class AssetsResolver {
     return page;
   }
 
-  @Query(returns => Asset)
+  @Query(returns => Asset, { nullable: true })
   async getAsset(
+    @Ctx("token") token: TokenEntity | null,
     @Arg("assetId") assetId: string,
-  ): Promise<Asset> {
+  ): Promise<Asset | null> {
+    if (!token) {
+      throw new ForbiddenError("access denied")
+    }
     return await AssetEntity.createQueryBuilder("asset").leftJoinAndSelect('asset.sites', 'sites').leftJoinAndSelect('asset.protections', 'protections').where({
       assetId,
     }).getOne()

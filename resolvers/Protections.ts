@@ -274,10 +274,14 @@ class ProtectionsResolver {
     return list;
   }
 
-  @Query(returns => Protection)
+  @Query(returns => Protection, { nullable: true })
   async getProtection(
+    @Ctx("token") token: TokenEntity | null,
     @Arg("protectionId") protectionId: string,
-  ): Promise<Protection> {
+  ): Promise<Protection | null> {
+    if (!token) {
+      throw new ForbiddenError("access denied")
+    }
     return await ProtectionEntity.createQueryBuilder("prot").leftJoinAndSelect('prot.sites', 'sites').where({
       protectionId,
     }).getOne()
