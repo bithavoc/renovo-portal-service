@@ -495,9 +495,9 @@ export default class VacStore {
                             }
                         }
                     }
-                    if (pvm.instanceUid === '4c4c4544-0033-4210-804e-b3c04f5a3132') {
-                        process.exit(1)
-                    }
+                    // if (pvm.instanceUid === '4c4c4544-0033-4210-804e-b3c04f5a3132') {
+                    //     process.exit(1)
+                    // }
                 }// pvm
             }
         }
