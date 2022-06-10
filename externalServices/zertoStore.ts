@@ -111,7 +111,7 @@ export default class ZertoStore {
 
         for (const zorg of zorgs) {
             const orgId = companyOrganizationId(zorg.identifier);
-            let org = await OrganizationEntity.findOne(orgId);
+            let org = await OrganizationEntity.findOneBy({ id: orgId });
             if (!org) {
                 org = new OrganizationEntity()
                 org.id = orgId;
@@ -133,7 +133,7 @@ export default class ZertoStore {
 
         for (const zsite of sites) {
             const siteId = zsiteSiteId(zsite.identifier);
-            let site = await SiteEntity.findOne(siteId);
+            let site = await SiteEntity.findOneBy({ siteId });
             if (!site) {
                 site = new SiteEntity()
                 site.siteId = siteId;
@@ -177,7 +177,7 @@ export default class ZertoStore {
 
         for (const vpg of vpgs.vpgs) {
             const protectionId = vpgProtectionId(vpg.identifier);
-            let protection = await ProtectionEntity.findOne(protectionId);
+            let protection = await ProtectionEntity.findOneBy({ protectionId });
             if (!protection) {
                 protection = new ProtectionEntity()
                 protection.protectionId = protectionId;
@@ -192,7 +192,7 @@ export default class ZertoStore {
 
             for (const zsite of allSites) {
                 const siteId = zsiteSiteId(zsite.site.identifier);
-                let protectionSite = await ProtectionSiteEntity.findOne({
+                let protectionSite = await ProtectionSiteEntity.findOneBy({
                     protectionId: protectionId,
                     siteId,
                 });
@@ -223,7 +223,7 @@ export default class ZertoStore {
 
         for (const vms of vmsList) {
             const assetId = vmsAssetId(vms.identifier);
-            let asset = await AssetEntity.findOne(assetId);
+            let asset = await AssetEntity.findOneBy({ assetId });
             if (!asset) {
                 asset = new AssetEntity()
                 asset.assetId = assetId;
@@ -245,7 +245,7 @@ export default class ZertoStore {
                 for (const zsite of allSites) {
                     console.log("saving vpg site for site", vpg.name, zsite);
                     const siteId = zsiteSiteId(zsite.site.identifier);
-                    let assetSite = await AssetSiteEntity.findOne({
+                    let assetSite = await AssetSiteEntity.findOneBy({
                         siteId: siteId,
                         assetId: assetId,
                     });
@@ -263,7 +263,7 @@ export default class ZertoStore {
 
                 const protectionId = vpgProtectionId(vpg.identifier)
 
-                let assetProtection = await AssetProtectionEntity.findOne({
+                let assetProtection = await AssetProtectionEntity.findOneBy({
                     protectionId,
                     assetId,
                 });
