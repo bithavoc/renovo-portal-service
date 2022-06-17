@@ -79,6 +79,10 @@ export default class VacStore {
         }
         site.siteId = siteId;
         site.title = repo.name || repo.hostName;
+        if (!site.veeamMeta) {
+            site.veeamMeta = {};
+        }
+        site.veeamMeta.backupRepository = repo;
         // site.veeamMeta = loc;
         await site.save();
         console.log("saved backup repository site", site.title);
@@ -186,7 +190,10 @@ export default class VacStore {
             }
             site.siteId = siteId;
             site.title = loc.name;
-            site.veeamMeta = loc;
+            if (!site.veeamMeta) {
+                site.veeamMeta = {};
+            }
+            site.veeamMeta.organizationLocation = loc;
             await site.save();
             console.log("site saved", site.title)
         }

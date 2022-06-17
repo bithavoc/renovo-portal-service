@@ -1,5 +1,5 @@
 import { Entity, Column, PrimaryColumn, BaseEntity, OneToMany } from "typeorm";
-import { OrganizationLocation } from "../../externalServices/vac/vac-sdk";
+import { BackupRepository, OrganizationLocation } from "../../externalServices/vac/vac-sdk";
 import { SiteDetails } from "../../externalServices/zerto/zerto-sdk";
 import AssetSiteEntity from "./AssetSite";
 import ProtectionSiteEntity from "./ProtectionSite";
@@ -20,7 +20,10 @@ export default class SiteEntity extends BaseEntity {
     zertoMeta?: SiteDetails;
 
     @Column({ type: 'simple-json', name: "veeam_meta", nullable: true })
-    veeamMeta?: OrganizationLocation;
+    veeamMeta?: {
+        organizationLocation?: OrganizationLocation;
+        backupRepository?: BackupRepository
+    };
 
     @OneToMany(type => AssetSiteEntity, assetSite => assetSite.site)
     assets: AssetSiteEntity[];

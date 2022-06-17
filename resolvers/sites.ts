@@ -11,7 +11,7 @@ import TokenEntity from "../database/entity/token";
 import { ForbiddenError } from "apollo-server";
 
 @ObjectType()
-export class SiteVeeamMeta {
+export class SiteVeeamOrganizationLocation {
   @Field({
     description: 'UID assigned to a location in Veeam Service Provider Console',
     nullable: true,
@@ -39,6 +39,157 @@ export class SiteVeeamMeta {
     nullable: true,
   })
   isDefault?: boolean;
+}
+
+@ObjectType()
+export class SiteVeeamBackupRepository {
+  @Field({
+    description: 'UID assigned to a backup repository',
+    nullable: true,
+  })
+  instanceUid?: string;
+
+  @Field({
+    description: 'Name of a backup repository',
+    nullable: true,
+  })
+  name?: string;
+
+  @Field({
+    description: 'UID assigned to a Veeam Backup & Replication server',
+    nullable: true,
+  })
+  backupServerUid?: string;
+
+  @Field({
+    description: ' UID assigned to a scale-out backup repository which includes the backup repository as an extent',
+    nullable: true,
+  })
+  parentRepositoryUid?: string;
+
+  @Field({
+    description: 'Indicates whether the per-VM backup job option is enabled in the backup repository settings. VM backup files option in the repository settings is enabled. Displays if the per-VM backup job option is enabled or not in the backup repository settings',
+    nullable: true,
+  })
+  perVMBackupFiles?: boolean;
+
+  @Field({
+    description: 'Total disk space of backup repository, in bytes',
+    nullable: true,
+  })
+  capacity?: number;
+
+  @Field({
+    description: 'Indicates whether information about total disk space is available',
+    nullable: true,
+  })
+  isCapacityAvailable?: boolean;
+
+  @Field({
+    description: 'Free disk space of backup repository, in bytes',
+    nullable: true,
+  })
+  freeSpace?: number;
+
+  @Field({
+    description: 'Indicates whether a backup repository has free space',
+    nullable: true,
+  })
+  isFreeSpaceAvailable?: boolean;
+
+  @Field({
+    description: 'Amount of used space on a backup repository, in bytes',
+    nullable: true,
+  })
+  usedSpace?: number;
+
+  @Field({
+    description: 'Indicates whether information about used space is available',
+    nullable: true,
+  })
+  isUsedSpaceAvailable?: boolean;
+
+  @Field({
+    description: `Type of a backup repository
+      | "Unknown"
+      | "Windows"
+      | "Linux"
+      | "Share"
+      | "Cloud"
+      | "ScaleOut"
+      | "MicrosoftAzureBlobStorage"
+      | "AmazonS3"
+      | "AmazonS3Compatible"
+      | "AmazonS3External"
+      | "AzureExternal"
+      | "DellEmcDataDomain"
+      | "HpeStoreOnce"
+      | "QuantumDxi"
+      | "IbmCloudObjectStorage"
+      | "NFS"
+      | "ExaGrid"
+      | "MicrosoftAzureArchive"
+      | "MicrosoftAzureDataBox"
+      | "GoogleCloud"
+      | "Infinidat"
+      | "Fujitsu"
+      | "AmazonS3Glacier"
+      | "S3Compatible";
+    `,
+    nullable: true,
+  })
+  type?: string;
+
+  @Field({
+    description: `UID assigned to a backup repository if it is used as a cloud repository`,
+    nullable: true,
+  })
+  cloudRepositoryUid?: string;
+
+  @Field({
+    description: 'Path to the folder where backup files are stored',
+    nullable: true,
+  })
+  path?: string;
+
+  @Field({
+    description: 'Name of a computer that performs a role of a backup repository',
+    nullable: true,
+  })
+  hostName?: string;
+
+  @Field({
+    description: 'UID assigned to a computer that performs a role of a backup repository',
+    nullable: true,
+  })
+  hostUid?: string;
+
+  @Field({
+    description: 'Indicates whether a backup repository service is outdated',
+    nullable: true,
+  })
+  isOutOfDate?: boolean;
+
+  @Field({
+    description: 'Status of a backup repository "Unknown" | "Healthy" | "Warning" | "Error"',
+    nullable: true,
+  })
+  status?: string;
+
+  @Field({
+    description: 'Indicates whether a backup repository is used as a cloud repository',
+    nullable: true,
+  })
+  isCloud?: boolean;
+}
+
+@ObjectType()
+export class SiteVeeamMeta {
+  @Field({ nullable: true })
+  organizationLocation?: SiteVeeamOrganizationLocation;
+
+  @Field({ nullable: true })
+  backupRepository?: SiteVeeamBackupRepository;
 }
 
 @ObjectType()
