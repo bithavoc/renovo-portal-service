@@ -51,6 +51,7 @@ class UsersResolver {
   async signUp(
     @Arg("info") { email, password, firstName, lastName }: NewUser,
   ): Promise<User> {
+    throw new Error("signups are disabled while in private beta")
     const existingUser = await UserEntity.findOne({ where: { email } });
     if (existingUser) {
       throw new AuthenticationError("user already exists")
