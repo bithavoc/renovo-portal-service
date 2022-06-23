@@ -7,8 +7,9 @@ import ProtectionEntity from "../database/entity/Protection";
 import ProtectionSiteEntity, { Purpose } from "../database/entity/ProtectionSite";
 import SiteEntity from "../database/entity/Site";
 import SiteOrganizationEntity from "../database/entity/SiteOrganization";
+import { PropType } from "../util/type";
 import { assetProtectionId } from "./identifiers";
-import { Api, HttpClient, ProtectedVpgs, RequestParams, SiteDetails, Vms } from "./zerto/zerto-sdk";
+import { Api, HttpClient, ProtectedVpgs, RequestParams, SiteDetails, Vms, Vpg, VpgHealth } from "./zerto/zerto-sdk";
 
 const createBaseParams = () => ({
     baseURL: "https://analytics.api.zerto.com",
@@ -185,6 +186,7 @@ export default class ZertoStore {
             }
             protection.title = vpg.name;
             protection.zertoMeta = vpg;
+            protection.health = inferProtectionHealth(vpg.health);
             await protection.save();
             console.log("vpg saved", protection.title)
 
@@ -280,5 +282,21 @@ export default class ZertoStore {
         }
 
         console.log("zerto store loaded")
+    }
+}
+
+function inferProtectionHealth(status: VpgHealth): PropType<ProtectionEntity, 'health'> {
+    if (!status) {
+        return 'unknown';
+    }
+    switch (status) {
+        case 'Healthy':
+            return 'healthy';
+        case 'Erroneous':
+            return 'erroneous';
+        case 'Warned':
+            return 'warned';
+        default:
+            return 'unknown';
     }
 }

@@ -693,7 +693,7 @@ async function loadAllResources<T>(loadPage: (params: { offset?: number, limit: 
     return all;
 }
 
-function inferProtectionHealth(status: PropType<BackupServerJob, 'status'> | PropType<BackupAgentJob, 'status'>): "healthy" | "warned" | "erroneous" | "unknown" {
+function inferProtectionHealth(status: PropType<BackupServerJob, 'status'> | PropType<BackupAgentJob, 'status'>): PropType<ProtectionEntity, 'health'> {
     switch (status) {
         case 'Unknown':
             return 'unknown'
