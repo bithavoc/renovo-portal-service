@@ -245,6 +245,9 @@ class ProtectionsResolver {
     }
     const page = await Paginate(pageRequest, () => {
       let query = ProtectionEntity.createQueryBuilder("prot");
+      query.orderBy({
+        title: 'ASC'
+      })
       if (siteIdentifiers) {
         console.log('querying by sites', siteIdentifiers);
         query = query.leftJoin('prot.sites', 'sites');
