@@ -31,5 +31,5 @@ export default class ProtectionEntity extends BaseEntity {
     assets: AssetProtectionEntity[];
 
     @Column()
-    health: "healthy" | "warned" | "erroneous";
+    health: "healthy" | "warned" | "erroneous" | "unknown";
 }

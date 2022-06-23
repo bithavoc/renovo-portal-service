@@ -80,7 +80,8 @@ export const AppDataSource = new DataSource({
         AddHealthToProtections1656019688926,
     ]
 });
-export const initDatabase = async () => {
+
+export async function initDatabase() {
     await AppDataSource.initialize();
     await AppDataSource.runMigrations();
 }
