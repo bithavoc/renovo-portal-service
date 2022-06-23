@@ -29,4 +29,7 @@ export default class ProtectionEntity extends BaseEntity {
 
     @OneToMany(type => AssetProtectionEntity, assetProtection => assetProtection.protection)
     assets: AssetProtectionEntity[];
+
+    @Column()
+    health: "healthy" | "warned" | "erroneous";
 }

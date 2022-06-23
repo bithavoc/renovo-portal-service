@@ -4,4 +4,4 @@ export UID=$(id -u)
 export GID=$(id -g)
 export DOCKER_COMPOSE_PROJECT_NAME=renovo-portal
 echo "Running as $UID:$GID"
-docker-compose -p $DOCKER_COMPOSE_PROJECT_NAME -f docker-compose.dev.yml "$@"
+docker compose -p $DOCKER_COMPOSE_PROJECT_NAME -f docker-compose.dev.yml "$@"

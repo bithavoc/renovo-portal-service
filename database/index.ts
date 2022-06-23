@@ -1,5 +1,5 @@
 
-import { createConnection } from "typeorm";
+import { DataSource } from "typeorm";
 import AssetEntity from "./entity/Asset";
 import AssetProtectionEntity from "./entity/AssetProtection";
 import AssetSiteEntity from "./entity/AssetSite";
@@ -33,8 +33,9 @@ import { CreateProtectionsTable1651489422541 } from "./migration/1651489422541-C
 import { CreateProtectionSitesTable1651692586049 } from "./migration/1651692586049-CreateProtectionSitesTable";
 import { AddPurposeToProtectionSites1651694445319 } from "./migration/1651694445319-AddPurposeToProtectionSites";
 import { CreateAssetProtections1651709371323 } from "./migration/1651709371323-CreateAssetProtections";
+import { AddHealthToProtections1656019688926 } from "./migration/1656019688926-AddHealthToProtections";
 
-export const initDatabase = () => createConnection({
+export const AppDataSource = new DataSource({
     "type": "postgres",
     "url": process.env.DATABASE_URL,
     "synchronize": false,
@@ -76,5 +77,10 @@ export const initDatabase = () => createConnection({
         CreateProtectionSitesTable1651692586049,
         AddPurposeToProtectionSites1651694445319,
         CreateAssetProtections1651709371323,
+        AddHealthToProtections1656019688926,
     ]
 });
+export const initDatabase = async () => {
+    await AppDataSource.initialize();
+    await AppDataSource.runMigrations();
+}
