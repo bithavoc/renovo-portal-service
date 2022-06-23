@@ -34,6 +34,7 @@ import { CreateProtectionSitesTable1651692586049 } from "./migration/16516925860
 import { AddPurposeToProtectionSites1651694445319 } from "./migration/1651694445319-AddPurposeToProtectionSites";
 import { CreateAssetProtections1651709371323 } from "./migration/1651709371323-CreateAssetProtections";
 import { AddHealthToProtections1656019688926 } from "./migration/1656019688926-AddHealthToProtections";
+import { AddVendorToProtections1656024089277 } from "./migration/1656024089277-AddVendorToProtections";
 
 export const AppDataSource = new DataSource({
     "type": "postgres",
@@ -78,6 +79,7 @@ export const AppDataSource = new DataSource({
         AddPurposeToProtectionSites1651694445319,
         CreateAssetProtections1651709371323,
         AddHealthToProtections1656019688926,
+        AddVendorToProtections1656024089277,
     ]
 });
 

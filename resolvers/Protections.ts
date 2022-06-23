@@ -4,6 +4,7 @@ import AssetProtectionEntity from "../database/entity/AssetProtection";
 import ProtectionEntity from "../database/entity/Protection";
 import ProtectionSiteEntity from "../database/entity/ProtectionSite";
 import TokenEntity from "../database/entity/token";
+import { Vendor } from "../vendors/type";
 import { AssetProtection } from "./AssetProtections";
 import { Page } from "./pagination/page";
 import { Paginate } from "./pagination/paginator";
@@ -220,8 +221,11 @@ export class Protection {
   @Field({ nullable: true })
   zertoMeta?: ZertoProtectionVpg
 
-  @Field({ description: 'health of the protection, can be: "healthy" | "warned" | "erroneous" | "unknown"' })
+  @Field({ description: 'health of the protection: "healthy" | "warned" | "erroneous" | "unknown"' })
   health: string;
+
+  @Field({ description: 'vendor of the protection: "Zerto" | "Veeam"' })
+  vendor: Vendor;
 }
 
 @ObjectType()
@@ -239,6 +243,7 @@ class ProtectionsResolver {
     @Arg("page", type => PageRequest, { nullable: true }) pageRequest?: PageRequest,
     @Arg("titleContains", { nullable: true }) titleContains?: string,
     @Arg("healthContains", type => [String], { nullable: true }) healthContains?: string[],
+    @Arg("vendorContains", type => [String], { nullable: true }) vendorContains?: string[],
   ): Promise<ProtectionsPage> {
     if (!token) {
       throw new ForbiddenError("access denied")
@@ -264,6 +269,12 @@ class ProtectionsResolver {
         console.log('querying by health', healthContains);
         query = query.where('prot.health IN (:...healthContains)', {
           healthContains
+        })
+      }
+      if (vendorContains) {
+        console.log('querying by vendor', vendorContains);
+        query = query.where('prot.vendor IN (:...vendorContains)', {
+          vendorContains
         })
       }
       return query;

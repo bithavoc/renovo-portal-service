@@ -184,6 +184,7 @@ export default class ZertoStore {
                 protection.protectionId = protectionId;
                 protection.createdAt = new Date()
             }
+            protection.vendor = 'Zerto';
             protection.title = vpg.name;
             protection.zertoMeta = vpg;
             protection.health = inferProtectionHealth(vpg.health);

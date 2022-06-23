@@ -265,6 +265,7 @@ export default class VacStore {
                     protection.createdAt = new Date()
                 }
                 console.log("backup agent job to be saved", job, "agent", backupAgent);
+                protection.vendor = 'Veeam';
                 protection.title = job.name || backupAgent.name;
                 if (!protection.veeamMeta) {
                     protection.veeamMeta = {}
@@ -357,6 +358,7 @@ export default class VacStore {
                         protection.protectionId = protectionId;
                         protection.createdAt = new Date()
                     }
+                    protection.vendor = 'Veeam';
                     protection.title = job.name;
                     if (!protection.veeamMeta) {
                         protection.veeamMeta = {}
