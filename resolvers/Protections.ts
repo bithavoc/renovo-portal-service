@@ -219,6 +219,9 @@ export class Protection {
 
   @Field({ nullable: true })
   zertoMeta?: ZertoProtectionVpg
+
+  @Field({ description: 'health of the protection, can be: "healthy" | "warned" | "erroneous" | "unknown"' })
+  health: string;
 }
 
 @ObjectType()
