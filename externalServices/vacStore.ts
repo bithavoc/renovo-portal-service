@@ -7,6 +7,7 @@ import ProtectionEntity from "../database/entity/Protection";
 import ProtectionSiteEntity from "../database/entity/ProtectionSite";
 import SiteEntity from "../database/entity/Site";
 import SiteOrganizationEntity from "../database/entity/SiteOrganization";
+import { PropType } from "../util/type";
 import { assetProtectionId } from "./identifiers";
 import { Api, BackupAgent, BackupAgentJob, BackupRepository, BackupServer, BackupServerAgentJobObject, BackupServerJob, CloudAgent, Company, ErrorResponse, HttpResponse, ManagementAgent, OrganizationLocation, ProtectedComputerManagedByBackupServer, ProtectedComputerManagedByConsole, ProtectedVirtualMachine, ProtectedVirtualMachineBackupRestorePoint, ResponseError, ResponseMetadata } from "./vac/vac-sdk";
 
@@ -269,6 +270,7 @@ export default class VacStore {
                     protection.veeamMeta = {}
                 }
                 protection.veeamMeta.backupAgentJob = job;
+                protection.health = inferProtectionHealth(job.status);
                 await protection.save();
                 console.log("backup agent job saved", protection.title)
 
@@ -360,6 +362,7 @@ export default class VacStore {
                         protection.veeamMeta = {}
                     }
                     protection.veeamMeta.backupServerJob = job;
+                    protection.health = inferProtectionHealth(job.status);
                     await protection.save();
                     console.log("backup server job saved", protection.title)
 
@@ -688,4 +691,37 @@ async function loadAllResources<T>(loadPage: (params: { offset?: number, limit: 
         }
     }
     return all;
+}
+
+function inferProtectionHealth(status: PropType<BackupServerJob, 'status'> | PropType<BackupAgentJob, 'status'>): "healthy" | "warned" | "erroneous" | "unknown" {
+    switch (status) {
+        case 'Unknown':
+            return 'unknown'
+        case 'Disabling':
+            return 'warned';
+        case 'Enabling':
+            return 'warned';
+        case 'Failed':
+            return 'erroneous';
+        case 'Idle':
+            return 'warned';
+        case 'None':
+            return 'unknown';
+        case 'Running':
+            return 'healthy';
+        case 'Starting':
+            return 'healthy';
+        case 'Stopping':
+            return 'warned';
+        case 'Success':
+            return 'healthy';
+        case 'Unknown':
+            return 'unknown';
+        case 'WaitingRepository':
+            return 'erroneous';
+        case 'WaitingTape':
+            return 'erroneous';
+        default:
+            return 'unknown';
+    }
 }
