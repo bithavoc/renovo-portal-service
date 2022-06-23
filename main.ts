@@ -11,8 +11,6 @@ config();
 const PORT = process.env.PORT || 4000;
 
 async function bootstrap() {
-  // const vacStore = new VacStore();
-  // await vacStore.load()
   console.debug("initialize database");
   await initDatabase();
   const schema = await buildSchema({

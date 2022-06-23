@@ -238,6 +238,7 @@ class ProtectionsResolver {
     @Arg("sitesIdentifiers", type => [String], { nullable: true }) siteIdentifiers?: string[],
     @Arg("page", type => PageRequest, { nullable: true }) pageRequest?: PageRequest,
     @Arg("titleContains", { nullable: true }) titleContains?: string,
+    @Arg("healthContains", type => [String], { nullable: true }) healthContains?: string[],
   ): Promise<ProtectionsPage> {
     if (!token) {
       throw new ForbiddenError("access denied")
@@ -254,6 +255,12 @@ class ProtectionsResolver {
       if (titleContains) {
         query.where('prot.title ILIKE :titleTerm', {
           titleTerm: `%${titleContains}%`
+        })
+      }
+      if (healthContains) {
+        console.log('querying by health', healthContains);
+        query = query.where('prot.health IN (:...healthContains)', {
+          healthContains
         })
       }
       return query;
