@@ -717,12 +717,12 @@ function inferProtectionHealth(status: PropType<BackupServerJob, 'status'> | Pro
             return 'warned';
         case 'Success':
             return 'healthy';
-        case 'Unknown':
-            return 'unknown';
         case 'WaitingRepository':
             return 'erroneous';
         case 'WaitingTape':
             return 'erroneous';
+        case 'Warning':
+            return 'warned';
         default:
             return 'unknown';
     }
