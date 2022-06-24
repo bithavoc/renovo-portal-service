@@ -1,4 +1,4 @@
-## Renovo Portal API
+## Renovo Portal API and Web Service backend
 
 ## Dev
 
