@@ -271,7 +271,7 @@ export default class VacStore {
                     protection.veeamMeta = {}
                 }
                 protection.veeamMeta.backupAgentJob = job;
-                protection.health = inferProtectionHealth(job.status);
+                protection.health = inferProtectionHealth(job.status, job.failureMessage);
                 await protection.save();
                 console.log("backup agent job saved", protection.title)
 
@@ -364,7 +364,7 @@ export default class VacStore {
                         protection.veeamMeta = {}
                     }
                     protection.veeamMeta.backupServerJob = job;
-                    protection.health = inferProtectionHealth(job.status);
+                    protection.health = inferProtectionHealth(job.status, job.failureMessage);
                     await protection.save();
                     console.log("backup server job saved", protection.title)
 
@@ -695,7 +695,8 @@ async function loadAllResources<T>(loadPage: (params: { offset?: number, limit: 
     return all;
 }
 
-function inferProtectionHealth(status: PropType<BackupServerJob, 'status'> | PropType<BackupAgentJob, 'status'>): PropType<ProtectionEntity, 'health'> {
+function inferProtectionHealth(status: PropType<BackupServerJob, 'status'> | PropType<BackupAgentJob, 'status'>, failureMessage: string | null | undefined): PropType<ProtectionEntity, 'health'> {
+    failureMessage = failureMessage || '';
     switch (status) {
         case 'Unknown':
             return 'unknown'
@@ -722,7 +723,7 @@ function inferProtectionHealth(status: PropType<BackupServerJob, 'status'> | Pro
         case 'WaitingTape':
             return 'erroneous';
         case 'Warning':
-            return 'warned';
+            return 'healthy'; // finished but with warnings or recommendations
         default:
             return 'unknown';
     }
