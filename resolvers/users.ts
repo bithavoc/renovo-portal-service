@@ -51,13 +51,25 @@ class UsersResolver {
   async signUp(
     @Arg("info") { email, password, firstName, lastName }: NewUser,
   ): Promise<User> {
-    throw new Error("signups are disabled while in private beta")
+    const allowList = [
+      'sharmon@renovodata.com',
+      'rroberts@renovodata.com',
+      'jdelaney@renovodata.com',
+      'rkelleher@renovodata.com',
+      'cbrowne@renovodata.com',
+      'mvayle@renovodata.com'
+    ];
+    email = email.trim().toLowerCase();
+    const isAllowListed = allowList.indexOf(email) !== -1;
+    if (!isAllowListed) {
+      throw new AuthenticationError("oops, sorry, we're in private beta")
+    }
     const existingUser = await UserEntity.findOne({ where: { email } });
     if (existingUser) {
       throw new AuthenticationError("user already exists")
     }
     const user = UserEntity.create({
-      email, // TODO: normalize email
+      email,
       userId: uuid(),
       createdAt: new Date(),
       password: await hash(password, 10),
