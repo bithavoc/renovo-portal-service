@@ -1,5 +1,4 @@
 import { Entity, Column, PrimaryColumn, BaseEntity, OneToMany } from "typeorm";
-import AssetEntity from "./Asset";
 import OrganizationMemberEntity from "./OrganizationMember";
 import SiteOrganizationEntity from "./SiteOrganization";
 
