@@ -93,12 +93,12 @@ class AssetsResolver {
       if (siteIdentifiers) {
         console.log('querying by sites', siteIdentifiers);
         query.leftJoin('asset.sites', 'sites');
-        query.where('sites.siteId IN (:...siteIdentifiers)', {
+        query.andWhere('sites.siteId IN (:...siteIdentifiers)', {
           siteIdentifiers
         })
       }
       if (titleContains) {
-        query.where('asset.title ILIKE :titleTerm', {
+        query.andWhere('asset.title ILIKE :titleTerm', {
           titleTerm: `%${titleContains}%`
         })
       }

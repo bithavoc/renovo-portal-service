@@ -256,24 +256,24 @@ class ProtectionsResolver {
       if (siteIdentifiers) {
         console.log('querying by sites', siteIdentifiers);
         query = query.leftJoin('prot.sites', 'sites');
-        query = query.where('sites.siteId IN (:...siteIdentifiers)', {
+        query = query.andWhere('sites.siteId IN (:...siteIdentifiers)', {
           siteIdentifiers
         })
       }
       if (titleContains) {
-        query.where('prot.title ILIKE :titleTerm', {
+        query.andWhere('prot.title ILIKE :titleTerm', {
           titleTerm: `%${titleContains}%`
         })
       }
       if (healthContains) {
         console.log('querying by health', healthContains);
-        query = query.where('prot.health IN (:...healthContains)', {
+        query = query.andWhere('prot.health IN (:...healthContains)', {
           healthContains
         })
       }
       if (vendorContains) {
         console.log('querying by vendor', vendorContains);
-        query = query.where('prot.vendor IN (:...vendorContains)', {
+        query = query.andWhere('prot.vendor IN (:...vendorContains)', {
           vendorContains
         })
       }
