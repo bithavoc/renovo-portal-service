@@ -41,9 +41,102 @@ export class VeeamAssetVMMeta {
 }
 
 @ObjectType()
+export class VeeamAssetComputerManagedByConsoleMeta {
+  @Field({ nullable: true, description: 'UID assigned to a backup agent installed on a computer' })
+  backupAgentUid?: string;
+
+  @Field({ nullable: true, description: 'UID assigned to an organization' })
+  organizationUid?: string;
+
+  @Field({ nullable: true, description: 'Hostname of a protected computer' })
+  name?: string;
+
+  @Field({ nullable: true, description: 'Number of jobs' })
+  numberOfJobs?: number;
+
+  @Field({ nullable: true, description: 'Operation mode  "Unknown" | "Server" | "Workstation"' })
+  operationMode?: string;
+
+  @Field({ nullable: true, description: 'Time and date of the latest restore point creation' })
+  latestRestorePointDate?: string;
+
+  // // we left these properties here because they're present in the VM
+  // @Field({ nullable: true, description: 'Total size of protected virtual machine disks, in bytes' })
+  // provisionedStorageMb?: number;
+
+  // @Field({ nullable: true, description: 'Used space on protected virtual machine disks, in bytes' })
+  // usedStorageMb?: number;
+
+  // @Field({ nullable: true, description: 'Total size of all restore points, in bytes' })
+  // totalRestorePointSize?: number;
+
+  // @Field({ nullable: true, description: 'Size of the latest restore point, in bytes' })
+  // latestRestorePointSize?: number;
+
+  // @Field({ nullable: true, description: 'Number of restore points' })
+  // restorePoints?: number;
+}
+
+@ObjectType()
+export class VeeamAssetComputerManagedByBackupServerMeta {
+  @Field({ nullable: true, description: 'UID assigned to a protected computer' })
+  instanceUid?: string;
+
+  @Field({ nullable: true, description: 'Protected computer UID assigned in Veeam Backup & Replication' })
+  sourceInstanceUid?: string;
+
+  @Field({ nullable: true, description: 'UID assigned to a backup server' })
+  backupServerUid?: string;
+
+  @Field(type => [String], { nullable: true, description: 'Protection group UIDs' })
+  protectionGroups?: string[];
+
+  @Field({ nullable: true, description: 'UID assigned to an organization' })
+  organizationUid?: string;
+
+  @Field({ nullable: true, description: 'Hostname of a protected computer' })
+  name?: string;
+
+  @Field(type => [String], { nullable: true, description: 'Computer IP addresses' })
+  ipAddresses?: string[];
+
+  @Field({ nullable: true, description: 'Operating system installed on a protected computer' })
+  guestOs?: string;
+
+  @Field({ nullable: true, description: 'Platform type of a protected computer, "Unknown" | "Windows" | "Linux" | "Mac"' })
+  platformType?: string;
+
+  @Field({ nullable: true, description: 'Operation mode  "Unknown" | "Server" | "Workstation"' })
+  operationMode?: string;
+
+  @Field({ nullable: true, description: 'Time and date of the latest restore point creation' })
+  latestRestorePointDate?: string;
+
+  // // we left these properties here because they're present in the VM
+  // @Field({ nullable: true, description: 'Total size of protected virtual machine disks, in bytes' })
+  // provisionedStorageMb?: number;
+
+  // @Field({ nullable: true, description: 'Used space on protected virtual machine disks, in bytes' })
+  // usedStorageMb?: number;
+
+  // @Field({ nullable: true, description: 'Total size of all restore points, in bytes' })
+  // totalRestorePointSize?: number;
+
+  // @Field({ nullable: true, description: 'Size of the latest restore point, in bytes' })
+  // latestRestorePointSize?: number;
+
+  // @Field({ nullable: true, description: 'Number of restore points' })
+  // restorePoints?: number;
+}
+
+@ObjectType()
 export class VeeamAssetMeta {
   @Field({ nullable: true })
   vm?: VeeamAssetVMMeta;
+  @Field({ nullable: true })
+  computerByConsole?: VeeamAssetComputerManagedByConsoleMeta;
+  @Field({ nullable: true })
+  computerByBackupServer?: VeeamAssetComputerManagedByConsoleMeta;
 }
 
 @ObjectType()
