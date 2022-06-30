@@ -1,7 +1,6 @@
-import { Entity, Column, PrimaryColumn, BaseEntity, OneToMany } from "typeorm";
-import { UserSummary } from "../../resolvers/Summary";
+import { Entity, Column, PrimaryColumn, BaseEntity, OneToMany, ManyToOne, JoinColumn, OneToOne } from "typeorm";
 import OrganizationMemberEntity from "./OrganizationMember";
-import SiteEntity from "./Site";
+import SummaryEntity from "./Summary";
 import TokenEntity from "./token";
 
 @Entity({ name: "users" })
@@ -51,18 +50,22 @@ export default class UserEntity extends BaseEntity {
         ]
     }
 
-    get summary(): UserSummary {
-        return {
-            protections: {
-                generalHealth: {
-                    healthy: 800,
-                    erroneous: 140,
-                },
-                total: 940
-            },
-            assets: {
-                total: 3400
-            }
-        }
-    }
+    // get summary(): UserSummary {
+    //     return {
+    //         protections: {
+    //             generalHealth: {
+    //                 healthy: 800,
+    //                 erroneous: 140,
+    //             },
+    //             total: 940
+    //         },
+    //         assets: {
+    //             total: 3400
+    //         }
+    //     }
+    // }
+
+    @OneToOne(() => SummaryEntity, { nullable: true })
+    @JoinColumn({ name: "summary_id" })
+    summary?: SummaryEntity;
 }

@@ -31,10 +31,16 @@ export class AssetStats {
 }
 
 @ObjectType()
-export class UserSummary {
+export class Stats {
   @Field()
   protections: ProtectionStats;
 
   @Field()
   assets: AssetStats;
+}
+
+@ObjectType()
+export class Summary {
+  @Field()
+  stats: Stats;
 }

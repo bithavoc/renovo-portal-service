@@ -9,6 +9,7 @@ import ProtectionEntity from "./entity/Protection";
 import ProtectionSiteEntity from "./entity/ProtectionSite";
 import SiteEntity from "./entity/Site";
 import SiteOrganizationEntity from "./entity/SiteOrganization";
+import SummaryEntity from "./entity/Summary";
 import TokenEntity from "./entity/token";
 import UserEntity from "./entity/user";
 import { CreateUser1630703672513 } from "./migration/1630703672513-CreateUser";
@@ -35,6 +36,8 @@ import { AddPurposeToProtectionSites1651694445319 } from "./migration/1651694445
 import { CreateAssetProtections1651709371323 } from "./migration/1651709371323-CreateAssetProtections";
 import { AddHealthToProtections1656019688926 } from "./migration/1656019688926-AddHealthToProtections";
 import { AddVendorToProtections1656024089277 } from "./migration/1656024089277-AddVendorToProtections";
+import { CreateSummariesTable1656623207505 } from "./migration/1656623207505-CreateSummariesTable";
+import { AddSummaryToUsers1656623437573 } from "./migration/1656623437573-AddSummaryToUsers";
 
 export const AppDataSource = new DataSource({
     "type": "postgres",
@@ -53,7 +56,8 @@ export const AppDataSource = new DataSource({
         SiteOrganizationEntity,
         ProtectionEntity,
         ProtectionSiteEntity,
-        AssetProtectionEntity
+        AssetProtectionEntity,
+        SummaryEntity,
     ],
     "migrations": [
         CreateUser1630703672513,
@@ -80,6 +84,8 @@ export const AppDataSource = new DataSource({
         CreateAssetProtections1651709371323,
         AddHealthToProtections1656019688926,
         AddVendorToProtections1656024089277,
+        CreateSummariesTable1656623207505,
+        AddSummaryToUsers1656623437573,
     ]
 });
 

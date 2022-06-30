@@ -3,7 +3,7 @@ import { Arg, Field, ID, InputType, Mutation, ObjectType, Query, Resolver } from
 import UserEntity from "../database/entity/user";
 import { uuid } from 'uuidv4';
 import { hash } from 'bcrypt';
-import { UserSummary } from "./Summary";
+import { Stats, Summary } from "./Stats";
 
 @ObjectType()
 export class User {
@@ -20,7 +20,7 @@ export class User {
   lastName: string;
 
   @Field({ nullable: true })
-  summary?: UserSummary;
+  summary?: Summary;
 }
 
 @InputType()
