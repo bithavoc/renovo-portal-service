@@ -59,6 +59,9 @@ export default class UserEntity extends BaseEntity {
                     erroneous: 140,
                 },
                 total: 940
+            },
+            assets: {
+                total: 3400
             }
         }
     }

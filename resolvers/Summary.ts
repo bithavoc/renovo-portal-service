@@ -25,7 +25,16 @@ export class ProtectionStats {
 }
 
 @ObjectType()
+export class AssetStats {
+  @Field()
+  total: number;
+}
+
+@ObjectType()
 export class UserSummary {
   @Field()
   protections: ProtectionStats;
+
+  @Field()
+  assets: AssetStats;
 }
