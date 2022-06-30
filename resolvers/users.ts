@@ -1,9 +1,10 @@
 import { AuthenticationError } from "apollo-server";
-import { Arg, Field, ID, InputType, Mutation, ObjectType, Query, Resolver } from "type-graphql";
+import { Arg, Field, FieldResolver, ID, InputType, Mutation, ObjectType, Query, Resolver, Root } from "type-graphql";
 import UserEntity from "../database/entity/user";
 import { uuid } from 'uuidv4';
 import { hash } from 'bcrypt';
 import { Stats, Summary } from "./Stats";
+import SummaryEntity from "../database/entity/Summary";
 
 @ObjectType()
 export class User {
@@ -96,6 +97,18 @@ class UsersResolver {
   //   // });
   //   // return u.sites;
   // }
+
+  @FieldResolver({ nullable: true })
+  async summary(@Root() user: UserEntity): Promise<Summary | null> {
+    const { summaryId } = user;
+    if (!summaryId) {
+      return null
+    }
+    const summary = await SummaryEntity.findOneBy({
+      summaryId,
+    })
+    return summary;
+  }
 }
 
 export default UsersResolver;

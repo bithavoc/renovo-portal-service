@@ -65,6 +65,9 @@ export default class UserEntity extends BaseEntity {
     //     }
     // }
 
+    @Column({ name: "summary_id", nullable: true })
+    summaryId?: string;
+
     @OneToOne(() => SummaryEntity, { nullable: true })
     @JoinColumn({ name: "summary_id" })
     summary?: SummaryEntity;
