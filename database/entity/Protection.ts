@@ -1,6 +1,7 @@
 import { Entity, Column, PrimaryColumn, BaseEntity, OneToMany } from "typeorm";
 import { BackupAgentJob, BackupServerJob } from "../../externalServices/vac/vac-sdk";
 import { Vpg } from "../../externalServices/zerto/zerto-sdk";
+import { Health } from "../../vendors/health";
 import { Vendor } from "../../vendors/type";
 import AssetProtectionEntity from "./AssetProtection";
 import ProtectionSiteEntity from "./ProtectionSite";
@@ -32,7 +33,7 @@ export default class ProtectionEntity extends BaseEntity {
     assets: AssetProtectionEntity[];
 
     @Column()
-    health: "healthy" | "warned" | "erroneous" | "unknown";
+    health: Health;
 
     @Column()
     vendor: Vendor;

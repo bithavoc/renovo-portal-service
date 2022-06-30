@@ -1,4 +1,5 @@
 import { Entity, Column, PrimaryColumn, BaseEntity, OneToMany } from "typeorm";
+import { UserSummary } from "../../resolvers/Summary";
 import OrganizationMemberEntity from "./OrganizationMember";
 import SiteEntity from "./Site";
 import TokenEntity from "./token";
@@ -48,5 +49,17 @@ export default class UserEntity extends BaseEntity {
             '12f3eda9-dc87-4ca2-aaef-cc8c437d883e', // ACE
             'f8e25a71-ff35-4fa0-844d-445055a4a9c4' // AL Smith
         ]
+    }
+
+    get summary(): UserSummary {
+        return {
+            protections: {
+                generalHealth: {
+                    healthy: 800,
+                    erroneous: 140,
+                },
+                total: 940
+            }
+        }
     }
 }
