@@ -41,6 +41,26 @@ services:
       nofile:
         soft: 20000
         hard: 40000
+  mailer:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend.dev
+    volumes:
+      - ./:/renovo
+    command: scripts/dev_mailer.sh
+    environment:
+      - DATABASE_URL=postgres://postgres:postgres@pgdb/postgres
+    env_file:
+      - .env
+    restart: always
+    group_add:
+      - $GID
+    user: $UID:$GID
+    ulimits:
+      nproc: 65535
+      nofile:
+        soft: 20000
+        hard: 40000
   frontend:
     build:
       context: .

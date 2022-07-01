@@ -6,7 +6,9 @@
   "scripts": {
     "start": "ts-node main.ts",
     "importer": "ts-node importer.ts",
+    "mailer": "ts-node mailer.ts",
     "dev-importer": "tsnd importer.ts",
+    "dev-mailer": "tsnd mailer.ts",
     "dev": "ts-node-dev main.ts --trace-warnings",
     "generate-migration": "npm run typeorm -- migration:generate",
     "typeorm": "typeorm-ts-node-esm -d database/index.ts",
@@ -29,6 +31,7 @@
     "jsonwebtoken": "^8.5.1",
     "node-fetch": "^2.6.7",
     "pg": "^8.7.1",
+    "postmark": "^3.0.12",
     "reflect-metadata": "^0.1.13",
     "ts-node": "^10.2.1",
     "type-graphql": "^1.1.1",
