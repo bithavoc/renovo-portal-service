@@ -110,6 +110,8 @@ export default class ZertoStore {
 
         console.log("zorgs count", zorgs.length)
 
+        const zorgIdentifiersByName: Record<string, string> = {};
+
         for (const zorg of zorgs) {
             const orgId = companyOrganizationId(zorg.identifier);
             let org = await OrganizationEntity.findOneBy({ id: orgId });
@@ -119,9 +121,8 @@ export default class ZertoStore {
                 org.createdAt = new Date()
             }
             org.title = zorg.name;
+            zorgIdentifiersByName[zorg.name] = zorg.identifier;
             await org.save();
-            const organizationId = org.id;
-
         }
 
         const sitesRes = await zerto.v2.monitoringSitesFormatTopologyList()
@@ -191,6 +192,9 @@ export default class ZertoStore {
             await protection.save();
             console.log("vpg saved", protection.title)
 
+            const zorgIdentifier = zorgIdentifiersByName[vpg.zorgName];
+            const organizationId = companyOrganizationId(zorgIdentifier)
+
             const allSites = getVPGSites(vpg);
 
             for (const zsite of allSites) {
@@ -206,7 +210,8 @@ export default class ZertoStore {
                 protectionSite.siteId = siteId;
                 protectionSite.protectionId = protectionId;
                 protectionSite.purpose = zsite.purpose;
-                // assetSite.organization = org;
+
+                protectionSite.organizationId = organizationId;
                 await protectionSite.save();
 
                 console.log("protection site saved", protectionSite.protectionId, protectionSite.siteId);

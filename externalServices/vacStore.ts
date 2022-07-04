@@ -12,7 +12,7 @@ import { assetProtectionId } from "./identifiers";
 import { Api, BackupAgent, BackupAgentJob, BackupRepository, BackupServer, BackupServerAgentJobObject, BackupServerJob, CloudAgent, Company, ErrorResponse, HttpResponse, ManagementAgent, OrganizationLocation, ProtectedComputerManagedByBackupServer, ProtectedComputerManagedByConsole, ProtectedVirtualMachine, ProtectedVirtualMachineBackupRestorePoint, ResponseError, ResponseMetadata } from "./vac/vac-sdk";
 
 const createVeamClient = (token: string) => new Api({
-    baseUrl: "https://vac.renovodata.com/api/v3",
+    baseUrl: "https://vac.renovodata.com:1280/api/v3",
     baseApiParams: {
         headers: {
             "Authorization": `Bearer ${token}`
@@ -295,6 +295,7 @@ export default class VacStore {
                     protectionSite.siteId = siteId;
                     protectionSite.protectionId = protectionId;
                     protectionSite.purpose = 'recovery';
+                    protectionSite.organization = org;
                     await protectionSite.save();
                     console.log("protection site saved", protectionSite.protectionId, protectionSite.siteId);
                 }
@@ -380,6 +381,7 @@ export default class VacStore {
                     protectionSite.siteId = siteId;
                     protectionSite.protectionId = protectionId;
                     protectionSite.purpose = 'protection';
+                    protectionSite.organization = org;
                     await protectionSite.save();
 
                     console.log("protection site(protection) saved", protectionSite.protectionId, protectionSite.siteId);
@@ -398,6 +400,7 @@ export default class VacStore {
                         protectionSite.siteId = siteId;
                         protectionSite.protectionId = protectionId;
                         protectionSite.purpose = 'recovery';
+                        protectionSite.organization = org;
                         await protectionSite.save();
 
                         console.log("protection site(recovery) saved", protectionSite.protectionId, protectionSite.siteId);

@@ -38,6 +38,7 @@ import { AddHealthToProtections1656019688926 } from "./migration/1656019688926-A
 import { AddVendorToProtections1656024089277 } from "./migration/1656024089277-AddVendorToProtections";
 import { CreateSummariesTable1656623207505 } from "./migration/1656623207505-CreateSummariesTable";
 import { AddSummaryToUsers1656623437573 } from "./migration/1656623437573-AddSummaryToUsers";
+import { AddOrganizationToProtectionSites1656957599510 } from "./migration/1656957599510-AddOrganizationToProtectionSites";
 
 export const AppDataSource = new DataSource({
     "type": "postgres",
@@ -86,6 +87,7 @@ export const AppDataSource = new DataSource({
         AddVendorToProtections1656024089277,
         CreateSummariesTable1656623207505,
         AddSummaryToUsers1656623437573,
+        AddOrganizationToProtectionSites1656957599510,
     ]
 });
 

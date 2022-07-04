@@ -1,4 +1,5 @@
-import { Entity, PrimaryColumn, BaseEntity, ManyToOne, JoinColumn, Column } from "typeorm";
+import { Entity, PrimaryColumn, BaseEntity, ManyToOne, JoinColumn, Column, OneToOne } from "typeorm";
+import OrganizationEntity from "./Organization";
 import ProtectionEntity from "./Protection";
 import SiteEntity from "./Site";
 
@@ -28,6 +29,13 @@ export default class ProtectionSiteEntity extends BaseEntity {
     @ManyToOne(() => SiteEntity, site => site.protections)
     @JoinColumn({ name: "site_id" })
     site: SiteEntity;
+
+    @Column({ name: "organization_id", nullable: true })
+    organizationId?: string;
+
+    @ManyToOne(() => OrganizationEntity, { nullable: true })
+    @JoinColumn({ name: "organization_id" })
+    organization?: OrganizationEntity;
 
     @Column({
         type: "enum",
