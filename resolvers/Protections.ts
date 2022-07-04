@@ -28,10 +28,10 @@ export class ZertoProtectionVpg {
   // /** Information related to the recovery site. */
   // recoverySite?: Site;
 
-  @Field({ nullable: true, description: 'The actual time since the last checkpoint was written to the journal' })
+  @Field({ nullable: true, description: 'The actual time since the last checkpoint was written to the journal, in seconds' })
   actualRpo?: number;
 
-  @Field({ nullable: true, description: 'The configured SLA RPO that the user defines in the ZVM' })
+  @Field({ nullable: true, description: 'The configured SLA RPO that the user defines in the ZVM, in seconds' })
   configuredRpo?: number;
 
 
