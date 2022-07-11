@@ -4,6 +4,7 @@ import AssetEntity from "../database/entity/Asset";
 import AssetProtectionEntity from "../database/entity/AssetProtection";
 import AssetSiteEntity from "../database/entity/AssetSite";
 import TokenEntity from "../database/entity/token";
+import { Vendor } from "../vendors/type";
 import { AssetProtection } from "./AssetProtections";
 import { AssetSite } from "./AssetSites";
 import { Page } from "./pagination/page";
@@ -161,6 +162,9 @@ export class Asset {
 
   @Field({ nullable: true })
   veeamMeta?: VeeamAssetMeta
+
+  @Field({ description: 'vendor of the protection: "Zerto" | "Veeam"' })
+  vendor: Vendor;
 }
 @ObjectType()
 export class AssetsPage extends Page<Asset> {
@@ -177,6 +181,7 @@ class AssetsResolver {
     @Arg("sitesIdentifiers", type => [String], { nullable: true }) siteIdentifiers?: string[],
     @Arg("page", type => PageRequest, { nullable: true }) pageRequest?: PageRequest,
     @Arg("titleContains", { nullable: true }) titleContains?: string,
+    @Arg("vendorContains", type => [String], { nullable: true }) vendorContains?: string[],
   ): Promise<AssetsPage> {
     if (!token) {
       throw new ForbiddenError("access denied")
@@ -193,6 +198,12 @@ class AssetsResolver {
       if (titleContains) {
         query.andWhere('asset.title ILIKE :titleTerm', {
           titleTerm: `%${titleContains}%`
+        })
+      }
+      if (vendorContains) {
+        console.log('querying by vendor', vendorContains);
+        query.andWhere('asset.vendor IN (:...vendorContains)', {
+          vendorContains
         })
       }
       return query;

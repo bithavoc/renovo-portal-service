@@ -239,6 +239,7 @@ export default class ZertoStore {
             }
             // asset.site = site;
             // asset.organization = org;
+            asset.vendor = 'Zerto';
             asset.title = vms.name;
             asset.zertoMeta = vms;
             await asset.save();

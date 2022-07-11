@@ -421,6 +421,7 @@ export default class VacStore {
                     }
                     // asset.site = site;
                     // asset.organization = org;
+                    asset.vendor = 'Veeam';
                     asset.title = pvm.name;
                     asset.veeamMeta = {
                         vm: pvm,
