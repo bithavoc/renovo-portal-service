@@ -48,10 +48,13 @@ export default class VacStore {
     constructor() {
 
     }
-    findBackupAgent(id: string): BackupAgent | undefined {
+    findBackupAgent(id: string | null | undefined): BackupAgent | undefined {
+        if (!id) {
+            return undefined;
+        }
         return this.allBackupAgents.find(ba => ba.instanceUid == id);
     }
-    findBackupAgentJobsOfAgent(agentUid: string): BackupAgentJob[] | undefined {
+    findBackupAgentJobsOfAgent(agentUid: string): BackupAgentJob[] {
         return this.allBackupAgentJobs.filter(j => j.backupAgentUid === agentUid);
     }
     findLocation(uid: string): OrganizationLocation | undefined {
@@ -63,14 +66,18 @@ export default class VacStore {
     findManagementAgent(uid: string): ManagementAgent | undefined {
         return this.allManagementAgents.find(c => c.instanceUid === uid);
     }
-    findBackupServer(id: string): BackupServer | undefined {
+    findBackupServer(id: string | null | undefined): BackupServer | undefined {
+        if (!id) {
+            return undefined;
+        }
         return this.allBackupServers.find(ba => ba.instanceUid == id);
     }
-    findBackupServerJobObjectsWithAgent(agentUid: string): BackupServerAgentJobObject[] | undefined {
+    findBackupServerJobObjectsWithAgent(agentUid: string): BackupServerAgentJobObject[] {
         return this.allBackupServerAgentJobObjects.filter(j => j.agentUid === agentUid);
     }
     async ensureBackupRepositorySite(organizationId: string, repo: BackupRepository): Promise<SiteEntity> {
-        const siteId = backupRepositorySiteId(repo.instanceUid);
+        const instanceUid = repo.instanceUid!;
+        const siteId = backupRepositorySiteId(instanceUid);
         let site = await SiteEntity.findOneBy({
             siteId
         });
@@ -79,7 +86,7 @@ export default class VacStore {
             site.createdAt = new Date()
         }
         site.siteId = siteId;
-        site.title = repo.name || repo.hostName;
+        site.title = repo.name || repo.hostName || instanceUid;
         if (!site.veeamMeta) {
             site.veeamMeta = {};
         }
@@ -106,7 +113,7 @@ export default class VacStore {
     }
     async load() {
         console.log("vac store loading")
-        const vac = createVeamClient(process.env.VAC_AT);
+        const vac = createVeamClient(process.env.VAC_AT!);
         this.allCompanies = await loadAllResources(params => vac.organizations.getCompanies({ ...params }));
         this.allLocations = await loadAllResources(params => vac.organizations.getLocations({ ...params }));
 
@@ -181,7 +188,8 @@ export default class VacStore {
         console.log("allProtectedComputersManagedByBackupServer", this.allProtectedComputersManagedByBackupServer.length);
         console.log("allProtectedComputersManagedByConsole", this.allProtectedComputersManagedByConsole.length);
         for (const loc of this.allLocations) {
-            const siteId = locationSiteId(loc.instanceUid);
+            const instanceUid = loc.instanceUid!
+            const siteId = locationSiteId(instanceUid);
             let site = await SiteEntity.findOneBy({
                 siteId
             });
@@ -201,14 +209,15 @@ export default class VacStore {
 
 
         for (const company of this.allCompanies) {
-            const orgId = companyOrganizationId(company.instanceUid);
+            const instanceUid = company.instanceUid!
+            const orgId = companyOrganizationId(instanceUid);
             let org = await OrganizationEntity.findOneBy({ id: orgId });
             if (!org) {
                 org = new OrganizationEntity()
                 org.id = orgId;
                 org.createdAt = new Date()
             }
-            org.title = company.name;
+            org.title = company.name || instanceUid;
             await org.save();
             const organizationId = org.id;
 
@@ -257,7 +266,8 @@ export default class VacStore {
                 // if (backupAgent. != loc.instanceUid) {
                 //     continue;
                 // }
-                const protectionId = backupAgentJobProtectionId(job.instanceUid);
+                const jobInstanceUid = job.instanceUid!;
+                const protectionId = backupAgentJobProtectionId(jobInstanceUid);
                 let protection = await ProtectionEntity.findOneBy({ protectionId });
                 if (!protection) {
                     protection = new ProtectionEntity()
@@ -266,7 +276,7 @@ export default class VacStore {
                 }
                 console.log("backup agent job to be saved", job, "agent", backupAgent);
                 protection.vendor = 'Veeam';
-                protection.title = job.name || backupAgent.name;
+                protection.title = job.name || backupAgent.name || jobInstanceUid;
                 if (!protection.veeamMeta) {
                     protection.veeamMeta = {}
                 }
@@ -305,7 +315,7 @@ export default class VacStore {
 
             console.log("company locations", locations.length);
             for (const loc of locations) {
-                const siteId = locationSiteId(loc.instanceUid);
+                const siteId = locationSiteId(loc.instanceUid!);
                 let siteOrg = await SiteOrganizationEntity.createQueryBuilder('so').where({
                     siteId,
                     organizationId,
@@ -322,12 +332,17 @@ export default class VacStore {
                 await siteOrg.save();
 
                 for (const job of backupServerJobs) {
+                    const jobInstanceUid = job.instanceUid!;
                     if (job.locationUid != loc.instanceUid) {
                         continue;
                     }
                     const backupServer = this.findBackupServer(job.backupServerUid);
-                    const serverReposRes = await vac.infrastructure.getBackupRepositoriesByServer(backupServer.instanceUid);
-                    const serverRepos = serverReposRes.data.data;
+                    if (!backupServer) {
+                        console.warn("backup server job", jobInstanceUid, "has no backup server");
+                        continue;
+                    }
+                    const serverReposRes = await vac.infrastructure.getBackupRepositoriesByServer(backupServer.instanceUid!);
+                    const serverRepos = serverReposRes.data.data || [];
 
                     const serverReposSites: SiteEntity[] = [];
                     for (const serverRepo of serverRepos) {
@@ -352,7 +367,7 @@ export default class VacStore {
                     //     // console.log("objects", objects);
                     //     process.exit(1);
                     // }
-                    const protectionId = backupServerJobProtectionId(job.instanceUid);
+                    const protectionId = backupServerJobProtectionId(jobInstanceUid);
                     let protection = await ProtectionEntity.findOneBy({ protectionId });
                     if (!protection) {
                         protection = new ProtectionEntity()
@@ -360,7 +375,7 @@ export default class VacStore {
                         protection.createdAt = new Date()
                     }
                     protection.vendor = 'Veeam';
-                    protection.title = job.name;
+                    protection.title = job.name || jobInstanceUid;
                     if (!protection.veeamMeta) {
                         protection.veeamMeta = {}
                     }
@@ -369,7 +384,7 @@ export default class VacStore {
                     await protection.save();
                     console.log("backup server job saved", protection.title)
 
-                    const siteId = locationSiteId(job.locationUid);
+                    const siteId = locationSiteId(job.locationUid!);
                     let protectionSite = await ProtectionSiteEntity.findOneBy({
                         protectionId: protectionId,
                         siteId,
@@ -386,7 +401,7 @@ export default class VacStore {
 
                     console.log("protection site(protection) saved", protectionSite.protectionId, protectionSite.siteId);
 
-                    const destinationRepoSite = findServerRepo(job.destination);
+                    const destinationRepoSite = findServerRepo(job.destination!);
                     if (destinationRepoSite) {
                         const { siteId } = destinationRepoSite;
                         let protectionSite = await ProtectionSiteEntity.findOneBy({
@@ -409,10 +424,11 @@ export default class VacStore {
 
 
                 for (const pvm of this.allProtectedVirtualMachines) {
+                    const pvmInstanceUid = pvm.instanceUid!
                     if (pvm.organizationUid !== loc.organizationUid) {
                         continue
                     }
-                    const assetId = vmAssetId(pvm.instanceUid);
+                    const assetId = vmAssetId(pvmInstanceUid);
                     let asset = await AssetEntity.findOneBy({ assetId });
                     if (!asset) {
                         asset = new AssetEntity()
@@ -422,7 +438,7 @@ export default class VacStore {
                     // asset.site = site;
                     // asset.organization = org;
                     asset.vendor = 'Veeam';
-                    asset.title = pvm.name;
+                    asset.title = pvm.name || pvmInstanceUid;
                     asset.veeamMeta = {
                         vm: pvm,
                     };
@@ -444,7 +460,7 @@ export default class VacStore {
 
                     console.log("asset site saved", assetSite.assetId, assetSite.siteId);
 
-                    const protectionId = backupServerJobProtectionId(pvm.jobUid); // TODO: use other types of jobs
+                    const protectionId = backupServerJobProtectionId(pvm.jobUid!); // TODO: use other types of jobs
 
                     const protection = await ProtectionEntity.findOneBy({ protectionId })
                     if (protection) {
@@ -466,6 +482,7 @@ export default class VacStore {
                 }
 
                 for (const pvm of this.allProtectedComputersManagedByConsole) {
+                    const pvmInstanceUid = pvm.backupAgentUid!;
                     // if (pvm.backupAgentUid === '60a70bf8-6449-6c66-9cea-b84d9cb9fb7e') {
                     //     console.log('pvm WK301', pvm)
                     //     process.exit(1);
@@ -473,14 +490,14 @@ export default class VacStore {
                     if (pvm.organizationUid !== loc.organizationUid) {
                         continue
                     }
-                    const assetId = protectedComputerAssetId(pvm.backupAgentUid);
+                    const assetId = protectedComputerAssetId(pvmInstanceUid);
                     let asset = await AssetEntity.findOneBy({ assetId });
                     if (!asset) {
                         asset = new AssetEntity()
                         asset.assetId = assetId;
                         asset.createdAt = new Date()
                     }
-                    asset.title = pvm.name;
+                    asset.title = pvm.name || pvmInstanceUid;
                     asset.veeamMeta = {
                         computerByConsole: pvm,
                     };
@@ -507,7 +524,7 @@ export default class VacStore {
                         const backupJobs = this.findBackupAgentJobsOfAgent(backupAgentUid);
 
                         for (const backupJob of backupJobs) {
-                            const backupAgentJobUid = backupJob.instanceUid;
+                            const backupAgentJobUid = backupJob.instanceUid!;
                             const protectionId = backupAgentJobProtectionId(backupAgentJobUid);
 
                             const protection = await ProtectionEntity.findOneBy({ protectionId })
@@ -531,6 +548,7 @@ export default class VacStore {
                     }
                 }// pvm
                 for (const pvm of this.allProtectedComputersManagedByBackupServer) {
+                    const pvmInstanceUid = pvm.instanceUid!
                     // if (pvm.backupAgentUid === '60a70bf8-6449-6c66-9cea-b84d9cb9fb7e') {
                     //     console.log('pvm WK301', pvm)
                     //     process.exit(1);
@@ -538,14 +556,14 @@ export default class VacStore {
                     if (pvm.organizationUid !== loc.organizationUid) {
                         continue
                     }
-                    const assetId = protectedComputerAssetId(pvm.instanceUid);
+                    const assetId = protectedComputerAssetId(pvmInstanceUid);
                     let asset = await AssetEntity.findOneBy({ assetId });
                     if (!asset) {
                         asset = new AssetEntity()
                         asset.assetId = assetId;
                         asset.createdAt = new Date()
                     }
-                    asset.title = pvm.name;
+                    asset.title = pvm.name || pvmInstanceUid;
                     asset.veeamMeta = {
                         computerByBackupServer: pvm,
                     };
@@ -572,7 +590,7 @@ export default class VacStore {
                         // const backupServer = this.findBackupServer(backupServerUid);
                         const objectsOfAgent = this.findBackupServerJobObjectsWithAgent(sourceInstanceUid);
 
-                        const backupJobs = objectsOfAgent.map(o => o.jobUid);
+                        const backupJobs = objectsOfAgent.map(o => o.jobUid!);
                         console.log('backupJobs', backupJobs);
 
                         for (const backupAgentJobUid of backupJobs) {

@@ -31,7 +31,7 @@ export default class ProtectionSiteEntity extends BaseEntity {
     site: SiteEntity;
 
     @Column({ name: "organization_id", nullable: true })
-    organizationId?: string;
+    organizationId?: string | null;
 
     @ManyToOne(() => OrganizationEntity, { nullable: true })
     @JoinColumn({ name: "organization_id" })
