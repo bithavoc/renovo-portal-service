@@ -9,7 +9,7 @@ import SiteEntity from "../database/entity/Site";
 import SiteOrganizationEntity from "../database/entity/SiteOrganization";
 import { PropType } from "../util/type";
 import { assetProtectionId } from "./identifiers";
-import { Api, HttpClient, ProtectedVpgs, RequestParams, SiteDetails, Vms, Vpg, VpgHealth } from "./zerto/zerto-sdk";
+import { Api, HttpClient, ProtectedVpgs, RequestParams, SiteDetails, SiteTopology, SupportedZorg, Vms, Vpg, VpgHealth, Zorg } from "./zerto/zerto-sdk";
 
 const createBaseParams = () => ({
     baseURL: "https://analytics.api.zerto.com",
@@ -30,7 +30,7 @@ const createZertoClient = async (username: string, password: string) => {
 
     console.log("zerto token ok")
     const authApi = new Api({
-        baseURL: "https://analytics.api.zerto.com",
+        // baseURL: "https://analytics.api.zerto.com",
         ...createBaseParams(),
         headers: {
             "Authorization": `Bearer ${token}`
@@ -39,7 +39,7 @@ const createZertoClient = async (username: string, password: string) => {
     return authApi;
 };
 
-const companyOrganizationId = (vacCompanyId: string) => `zorg_${vacCompanyId}`;
+const companyOrganizationId = (zorgId: string | null | undefined): string | null => zorgId ? `zorg_${zorgId}` : null;
 
 const zsiteSiteId = (zertoSiteId: string) => `zsite_${zertoSiteId}`;
 const vmsAssetId = (vmsId: string) => `zvms_${vmsId}`;
@@ -95,6 +95,14 @@ const plannerSitesList = (c: HttpClient, query?: { zorgIdentifier?: string }, pa
         ...params,
     });
 
+function getZorgIdentifier(zorg: SupportedZorg | Zorg) {
+    return zorg.identifier!
+}
+
+function getZsiteIdentifier(site: SiteTopology) {
+    return site.identifier!
+}
+
 export default class ZertoStore {
     constructor() {
 
@@ -102,7 +110,7 @@ export default class ZertoStore {
     async load() {
         console.log("zerto store loading")
 
-        const zerto = await createZertoClient(process.env.ZERTO_USERNAME, process.env.ZERTO_PASSWORD);
+        const zerto = await createZertoClient(process.env.ZERTO_USERNAME!, process.env.ZERTO_PASSWORD!);
 
         const zorgsResponse = await zerto.v2.monitoringZorgsList();
 
@@ -113,17 +121,26 @@ export default class ZertoStore {
         const zorgIdentifiersByName: Record<string, string> = {};
 
         for (const zorg of zorgs) {
-            const orgId = companyOrganizationId(zorg.identifier);
+            const zorgId = getZorgIdentifier(zorg);
+            const orgId = companyOrganizationId(zorgId)!;
             let org = await OrganizationEntity.findOneBy({ id: orgId });
             if (!org) {
                 org = new OrganizationEntity()
                 org.id = orgId;
                 org.createdAt = new Date()
             }
-            org.title = zorg.name;
-            zorgIdentifiersByName[zorg.name] = zorg.identifier;
+            const zorgName = zorg.name || zorgId;
+            org.title = zorgName;
+            zorgIdentifiersByName[zorgName] = zorgId;
             await org.save();
         }
+
+        console.log('zorgs by name', zorgIdentifiersByName);
+
+        // const zsites = await zerto.v2.monitoringSitesList()
+        // console.log('zsites', zsites.data);
+
+        // return;
 
         const sitesRes = await zerto.v2.monitoringSitesFormatTopologyList()
         // const sitesRes = await plannerSitesList(zerto, {
@@ -134,7 +151,8 @@ export default class ZertoStore {
         console.log("zsite count", sites.map(s => s.name))
 
         for (const zsite of sites) {
-            const siteId = zsiteSiteId(zsite.identifier);
+            const zsiteIdentifier = getZsiteIdentifier(zsite);
+            const siteId = zsiteSiteId(zsiteIdentifier);
             let site = await SiteEntity.findOneBy({ siteId });
             if (!site) {
                 site = new SiteEntity()
@@ -142,13 +160,16 @@ export default class ZertoStore {
                 site.createdAt = new Date()
             }
             // site.organization = org;
-            site.title = zsite.name;
+            site.title = zsite.name || zsiteIdentifier;
             site.zertoMeta = zsite;
             await site.save();
             console.log("zsite saved", zsite.identifier, site.title)
 
-            for (const zorg of zsite.zorgs) {
-                const orgId = companyOrganizationId(zorg.identifier);
+            const zsiteOrgs = zsite.zorgs || [];
+
+            for (const zorg of zsiteOrgs) {
+                const zorgIdentifer = getZorgIdentifier(zorg);
+                const orgId = companyOrganizationId(zorgIdentifer)!;
                 let siteOrg = await SiteOrganizationEntity.createQueryBuilder('so').where({
                     siteId,
                     organizationId: orgId,
@@ -177,8 +198,9 @@ export default class ZertoStore {
 
         console.log('vpgsRes', vpgsRes);
 
-        for (const vpg of vpgs.vpgs) {
-            const protectionId = vpgProtectionId(vpg.identifier);
+        for (const vpg of (vpgs.vpgs || [])) {
+            const vgpIdentifier = vpg.identifier!;
+            const protectionId = vpgProtectionId(vgpIdentifier);
             let protection = await ProtectionEntity.findOneBy({ protectionId });
             if (!protection) {
                 protection = new ProtectionEntity()
@@ -186,19 +208,25 @@ export default class ZertoStore {
                 protection.createdAt = new Date()
             }
             protection.vendor = 'Zerto';
-            protection.title = vpg.name;
+            protection.title = vpg.name || vgpIdentifier;
             protection.zertoMeta = vpg;
             protection.health = inferProtectionHealth(vpg.health);
             await protection.save();
             console.log("vpg saved", protection.title)
 
-            const zorgIdentifier = zorgIdentifiersByName[vpg.zorgName];
-            const organizationId = companyOrganizationId(zorgIdentifier)
+            const zorgName = vpg.zorgName || null;
+
+            let organizationId: string | null = null;
+
+            if (zorgName) {
+                const zorgIdentifier = zorgIdentifiersByName[zorgName];
+                organizationId = companyOrganizationId(zorgIdentifier)
+            }
 
             const allSites = getVPGSites(vpg);
 
             for (const zsite of allSites) {
-                const siteId = zsiteSiteId(zsite.site.identifier);
+                const siteId = zsiteSiteId(zsite.site!.identifier!);
                 let protectionSite = await ProtectionSiteEntity.findOneBy({
                     protectionId: protectionId,
                     siteId,
@@ -230,7 +258,8 @@ export default class ZertoStore {
         // console.log("vms", vmsList);
 
         for (const vms of vmsList) {
-            const assetId = vmsAssetId(vms.identifier);
+            const vmsIdentifier = vms.identifier!
+            const assetId = vmsAssetId(vmsIdentifier);
             let asset = await AssetEntity.findOneBy({ assetId });
             if (!asset) {
                 asset = new AssetEntity()
@@ -240,12 +269,14 @@ export default class ZertoStore {
             // asset.site = site;
             // asset.organization = org;
             asset.vendor = 'Zerto';
-            asset.title = vms.name;
+            asset.title = vms.name || vmsIdentifier;
             asset.zertoMeta = vms;
             await asset.save();
             console.log("asset saved", asset.title)
 
-            for (const vpg of vms.vpgs) {
+            for (const vpg of (vms.vpgs || [])) {
+                const vpgIdentifier = vpg.identifier!
+                const protectionId = vpgProtectionId(vpgIdentifier)
                 // const protectedSite = vpg.protectedSite as ExtProtectedVmsSite;
                 // const recoverySite = vpg.recoverySite as ExtProtectedVmsSite;
                 // const allSites = [protectedSite, recoverySite].filter(Boolean);
@@ -253,7 +284,7 @@ export default class ZertoStore {
 
                 for (const zsite of allSites) {
                     console.log("saving vpg site for site", vpg.name, zsite);
-                    const siteId = zsiteSiteId(zsite.site.identifier);
+                    const siteId = zsiteSiteId(zsite.site!.identifier!);
                     let assetSite = await AssetSiteEntity.findOneBy({
                         siteId: siteId,
                         assetId: assetId,
@@ -270,7 +301,6 @@ export default class ZertoStore {
                     console.log("asset site saved", assetSite.assetId, assetSite.siteId);
                 }
 
-                const protectionId = vpgProtectionId(vpg.identifier)
 
                 let assetProtection = await AssetProtectionEntity.findOneBy({
                     protectionId,
@@ -292,7 +322,7 @@ export default class ZertoStore {
     }
 }
 
-function inferProtectionHealth(status: VpgHealth): PropType<ProtectionEntity, 'health'> {
+function inferProtectionHealth(status: VpgHealth | undefined): PropType<ProtectionEntity, 'health'> {
     if (!status) {
         return 'unknown';
     }
