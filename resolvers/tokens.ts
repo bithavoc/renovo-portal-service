@@ -41,13 +41,6 @@ class TokensResolver {
     }
     return token
   }
-  @Query(returns => Token)
-  getToken(
-    token: string,
-  ): Promise<Token> {
-
-    return;
-  }
   @Mutation(returns => Token)
   async signIn(
     @Arg("credentials") { email, password }: Credentials,

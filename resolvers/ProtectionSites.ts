@@ -17,8 +17,8 @@ export class ProtectionSite {
   @Field()
   purpose: Purpose;
 
-  @Field({ nullable: true })
-  organizationId?: string;
+  @Field(() => String, { nullable: true })
+  organizationId?: string | null;
 
   @Field(() => Organization, { nullable: true })
   organization?: Organization;

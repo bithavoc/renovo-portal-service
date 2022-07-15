@@ -41,10 +41,10 @@ class NewUser {
 
 @Resolver(User)
 class UsersResolver {
-  @Query(returns => User)
+  @Query(returns => User, { nullable: true })
   async getToken(
     userId: string,
-  ): Promise<User> {
+  ): Promise<User | null> {
     return await UserEntity.findOne({
       where: {
         userId,
