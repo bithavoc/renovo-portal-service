@@ -6,7 +6,7 @@ import UserEntity from "./database/entity/user";
 import SummaryEntity from "./database/entity/Summary";
 config();
 
-const mailer = new ServerClient(process.env.POSTMARK_TOKEN);
+const mailer = new ServerClient(process.env.POSTMARK_TOKEN || '');
 
 async function run() {
   console.log("mailer starting")
@@ -19,6 +19,7 @@ async function run() {
     const { summary } = user;
     if (!summary) {
       console.warn('skipping user because it has no summary', user.email);
+      continue
     }
     await sendEmail(user, summary);
   }
