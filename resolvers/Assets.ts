@@ -190,8 +190,7 @@ class AssetsResolver {
       const query = AssetEntity.createQueryBuilder("asset")
       if (siteIdentifiers) {
         console.log('querying by sites', siteIdentifiers);
-        query.leftJoin('asset.sites', 'sites');
-        query.andWhere('sites.siteId IN (:...siteIdentifiers)', {
+        query.leftJoinAndSelect('asset.sites', 'sites', 'sites.siteId IN (:...siteIdentifiers)', {
           siteIdentifiers
         })
       }

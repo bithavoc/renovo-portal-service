@@ -385,11 +385,11 @@ class ProtectionsResolver {
     }
     const page = await Paginate(pageRequest, () => {
       let query = ProtectionEntity.createQueryBuilder("prot");
-      query.addOrderBy("prot.title", "ASC")
+      // query.addSelect("prot.*")
+      // query.addOrderBy("prot.title", "ASC")
       if (siteIdentifiers) {
         console.log('querying by sites', siteIdentifiers);
-        query = query.leftJoin('prot.sites', 'sites');
-        query = query.andWhere('sites.siteId IN (:...siteIdentifiers)', {
+        query = query.leftJoinAndSelect('prot.sites', 'psites', 'psites.siteId IN (:...siteIdentifiers)', {
           siteIdentifiers
         })
       }
@@ -412,6 +412,7 @@ class ProtectionsResolver {
       }
       return query;
     }, () => new ProtectionsPage())
+    console.log("returned page", page);
     return page;
   }
 

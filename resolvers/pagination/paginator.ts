@@ -8,6 +8,7 @@ export async function Paginate<T, TPage extends Page<T>>(
   pageCreator: () => TPage,
 ): Promise<TPage> {
   const query = createQuery();
+  const total = await query.getCount();
   const page = pageCreator();
   if (pageRequest) {
     if (pageRequest.index > 0) {
@@ -15,13 +16,14 @@ export async function Paginate<T, TPage extends Page<T>>(
     }
     query.take(pageRequest.itemsPerPage)
   }
-  const [results, total] = await query.getManyAndCount()
+  const results = await query.getMany()
   page.totalItems = total;
   if (pageRequest) {
     page.totalPages = Math.ceil(page.totalItems / pageRequest.itemsPerPage);
   } else {
     page.totalPages = 1;
   }
+  console.log("returned page items", results);
   page.items = results;
   return page;
 }
