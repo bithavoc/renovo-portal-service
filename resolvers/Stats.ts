@@ -31,12 +31,30 @@ export class AssetStats {
 }
 
 @ObjectType()
+export class SiteStats {
+  @Field()
+  total: number;
+}
+
+@ObjectType()
+export class OrganizationStats {
+  @Field()
+  total: number;
+}
+
+@ObjectType()
 export class Stats {
   @Field()
   protections: ProtectionStats;
 
   @Field()
   assets: AssetStats;
+
+  @Field()
+  organizations: OrganizationStats;
+
+  @Field()
+  sites: SiteStats;
 }
 
 @ObjectType()

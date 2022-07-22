@@ -1,6 +1,8 @@
 import { uuid } from "uuidv4";
 import AssetEntity from "../database/entity/Asset";
+import OrganizationEntity from "../database/entity/Organization";
 import ProtectionEntity from "../database/entity/Protection";
+import SiteEntity from "../database/entity/Site";
 import SummaryEntity from "../database/entity/Summary";
 import UserEntity from "../database/entity/user"
 
@@ -29,6 +31,12 @@ const summarizeForUser = async (user: UserEntity) => {
     },
     assets: {
       total: await AssetEntity.count()
+    },
+    sites: {
+      total: await SiteEntity.count()
+    },
+    organizations: {
+      total: await OrganizationEntity.count()
     }
   }
 
