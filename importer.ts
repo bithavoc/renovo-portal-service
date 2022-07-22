@@ -4,6 +4,7 @@ import { initDatabase } from "./database";
 import VacStore from "./externalServices/vacStore";
 import ZertoStore from "./externalServices/zertoStore";
 import { usersSummarize } from "./summaries/summarizer";
+import { updateCounts } from "./summaries/totals";
 config();
 
 async function run() {
@@ -15,6 +16,8 @@ async function run() {
 
   const zertoStore = new ZertoStore();
   await zertoStore.load();
+
+  await updateCounts();
 
   await usersSummarize();
 

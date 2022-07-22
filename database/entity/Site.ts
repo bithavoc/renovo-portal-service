@@ -28,9 +28,15 @@ export default class SiteEntity extends BaseEntity {
     @OneToMany(type => AssetSiteEntity, assetSite => assetSite.site)
     assets: AssetSiteEntity[];
 
+    @Column({ name: "assets_count" })
+    assetsCount: number;
+
     @OneToMany(type => SiteOrganizationEntity, siteOrg => siteOrg.site)
     organizations: SiteOrganizationEntity[];
 
     @OneToMany(type => ProtectionSiteEntity, protectionSite => protectionSite.site)
     protections: ProtectionSiteEntity[];
+
+    @Column({ name: "protections_count" })
+    protectionsCount: number;
 }

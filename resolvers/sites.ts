@@ -258,6 +258,12 @@ export class Site {
     nullable: true
   })
   zertoMeta?: SiteZertoMeta;
+
+  @Field()
+  protectionsCount: number;
+
+  @Field()
+  assetsCount: number;
 }
 
 
@@ -298,9 +304,9 @@ class SitesResolver implements ResolverInterface<Site> {
     if (!token) {
       throw new ForbiddenError("access denied")
     }
-    return await SiteEntity.createQueryBuilder("st").where({
+    return (await SiteEntity.createQueryBuilder("st").where({
       siteId,
-    }).getOne()
+    }).getOne()) || null;
   }
 }
 

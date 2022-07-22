@@ -40,6 +40,7 @@ import { CreateSummariesTable1656623207505 } from "./migration/1656623207505-Cre
 import { AddSummaryToUsers1656623437573 } from "./migration/1656623437573-AddSummaryToUsers";
 import { AddOrganizationToProtectionSites1656957599510 } from "./migration/1656957599510-AddOrganizationToProtectionSites";
 import { AddVendorToAssets1657558034750 } from "./migration/1657558034750-AddVendorToAssets";
+import { AddCountersToSites1658454682615 } from "./migration/1658454682615-AddCountersToSites";
 
 export const AppDataSource = new DataSource({
     "type": "postgres",
@@ -90,6 +91,7 @@ export const AppDataSource = new DataSource({
         AddSummaryToUsers1656623437573,
         AddOrganizationToProtectionSites1656957599510,
         AddVendorToAssets1657558034750,
+        AddCountersToSites1658454682615,
     ]
 });
 
