@@ -9,7 +9,7 @@ import SiteEntity from "../database/entity/Site";
 import SiteOrganizationEntity from "../database/entity/SiteOrganization";
 import { PropType } from "../util/type";
 import { assetProtectionId } from "./identifiers";
-import { Api, BackupAgent, BackupAgentJob, BackupRepository, BackupServer, BackupServerAgentJobObject, BackupServerJob, CloudAgent, Company, ErrorResponse, HttpResponse, ManagementAgent, OrganizationLocation, ProtectedComputerManagedByBackupServer, ProtectedComputerManagedByConsole, ProtectedVirtualMachine, ProtectedVirtualMachineBackupRestorePoint, ResponseError, ResponseMetadata } from "./vac/vac-sdk";
+import { Api, BackupAgent, BackupAgentJob, BackupRepository, BackupServer, BackupServerAgentJobObject, BackupServerJob, BackupServerJobLinkedJobObject, CloudAgent, Company, ErrorResponse, HttpResponse, ManagementAgent, OrganizationLocation, ProtectedComputerManagedByBackupServer, ProtectedComputerManagedByConsole, ProtectedVirtualMachine, ProtectedVirtualMachineBackupRestorePoint, ResponseError, ResponseMetadata } from "./vac/vac-sdk";
 
 const createVeamClient = (token: string) => new Api({
     baseUrl: "https://vac.renovodata.com:1280/api/v3",
@@ -44,6 +44,7 @@ export default class VacStore {
     allBackupServers: BackupServer[];
     allSites: CloudAgent[];
     allBackupServerAgentJobObjects: BackupServerAgentJobObject[];
+    allBackupServerImmediateBackupCopyJobObjects: BackupServerJobLinkedJobObject[];
     allManagementAgents: ManagementAgent[];
     constructor() {
 
@@ -75,6 +76,9 @@ export default class VacStore {
     findBackupServerJobObjectsWithAgent(agentUid: string): BackupServerAgentJobObject[] {
         return this.allBackupServerAgentJobObjects.filter(j => j.agentUid === agentUid);
     }
+    findBackupServerJobObjectsForImmediateBackupCopyJob(jobUid: string): BackupServerJobLinkedJobObject[] {
+        return this.allBackupServerImmediateBackupCopyJobObjects.filter(j => j.jobUid === jobUid);
+    }
     async ensureBackupRepositorySite(organizationId: string, repo: BackupRepository): Promise<SiteEntity> {
         const instanceUid = repo.instanceUid!;
         const siteId = backupRepositorySiteId(instanceUid);
@@ -99,7 +103,7 @@ export default class VacStore {
             siteId,
             organizationId,
         }).getOne();
-        console.log('site org', siteOrg)
+        // console.log('site org', siteOrg)
         if (!siteOrg) {
             siteOrg = new SiteOrganizationEntity();
             console.log('creating new site org')
@@ -133,6 +137,9 @@ export default class VacStore {
 
         this.allBackupServerAgentJobObjects = await loadAllResources(params => vac.infrastructure.getBackupServerAgentJobsObjects({ ...params }));
         console.log("allBackupServerAgentJobObjects", this.allBackupServerAgentJobObjects.length);
+
+        this.allBackupServerImmediateBackupCopyJobObjects = await loadAllResources(params => vac.infrastructure.getBackupServerImmediateBackupCopyJobsLinkedJobObjects({ ...params }));
+        console.log("allBackupServerImmediateBackupCopyJobObjects", this.allBackupServerImmediateBackupCopyJobObjects.length);
 
         const backupRepositories = await loadAllResources(params => vac.infrastructure.getBackupRepositories({ ...params }));
         console.log("backupRepositories", backupRepositories.length);
@@ -332,6 +339,8 @@ export default class VacStore {
                 await siteOrg.save();
 
                 for (const job of backupServerJobs) {
+                    const objects = this.findBackupServerJobObjectsForImmediateBackupCopyJob(job.instanceUid!);
+                    console.log("objects", objects);
                     const jobInstanceUid = job.instanceUid!;
                     if (job.locationUid != loc.instanceUid) {
                         continue;
@@ -420,6 +429,9 @@ export default class VacStore {
 
                         console.log("protection site(recovery) saved", protectionSite.protectionId, protectionSite.siteId);
                     }
+                    // if (protection.protectionId === 'veeambsj_edde9b80-c491-4e25-a406-f2fa6bf78814') {
+                    //     failDebug()
+                    // }
                 }
 
 
@@ -589,6 +601,7 @@ export default class VacStore {
                     if (backupServerUid && sourceInstanceUid) {
                         // const backupServer = this.findBackupServer(backupServerUid);
                         const objectsOfAgent = this.findBackupServerJobObjectsWithAgent(sourceInstanceUid);
+                        console.log("objectsOfAgent", objectsOfAgent);
 
                         const backupJobs = objectsOfAgent.map(o => o.jobUid!);
                         console.log('backupJobs', backupJobs);
@@ -605,16 +618,20 @@ export default class VacStore {
                                 if (!assetProtection) {
                                     assetProtection = new AssetProtectionEntity()
                                     assetProtection.createdAt = new Date()
-                                    assetProtection.assetProtectionId = assetProtectionId(assetId, protectionId)
                                 }
+                                assetProtection.assetProtectionId = assetProtectionId(assetId, protectionId);
                                 assetProtection.protectionId = protectionId;
                                 assetProtection.assetId = assetId;
                                 await assetProtection.save();
+                                console.log("saved asset protection", assetProtection.assetProtectionId);
                             } else {
                                 console.log("missing protection", backupAgentJobUid, "for protected virtual machine", pvm.instanceUid)
                             }
                         }
                     }
+                    // if (pvmInstanceUid === '6f0136c9-998f-4ac9-a41b-338e8b5cf920') {
+                    //     failDebug()
+                    // }
                     // if (pvm.instanceUid === '4c4c4544-0033-4210-804e-b3c04f5a3132') {
                     //     process.exit(1)
                     // }
@@ -691,6 +708,10 @@ export default class VacStore {
 
         console.log("vac store loaded")
     }
+}
+
+function failDebug() {
+    process.exit(1);
 }
 
 async function loadAllResources<T>(loadPage: (params: { offset?: number, limit: number }) => Promise<HttpResponse<{ meta?: ResponseMetadata; data?: T[]; errors?: ResponseError[] }, ErrorResponse>>): Promise<T[]> {

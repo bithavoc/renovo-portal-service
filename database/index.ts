@@ -46,7 +46,7 @@ export const AppDataSource = new DataSource({
     "type": "postgres",
     "url": process.env.DATABASE_URL,
     "synchronize": false,
-    "logging": true,
+    // "logging": true,
     "migrationsRun": true,
     "entities": [
         UserEntity,

@@ -389,7 +389,7 @@ class ProtectionsResolver {
       // query.addOrderBy("prot.title", "ASC")
       if (siteIdentifiers) {
         console.log('querying by sites', siteIdentifiers);
-        query = query.leftJoinAndSelect('prot.sites', 'psites', 'psites.siteId IN (:...siteIdentifiers)', {
+        query = query.innerJoinAndSelect('prot.sites', 'psites', 'psites.siteId IN (:...siteIdentifiers)', {
           siteIdentifiers
         })
       }
