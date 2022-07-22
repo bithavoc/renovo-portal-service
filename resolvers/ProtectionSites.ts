@@ -28,7 +28,7 @@ export class ProtectionSite {
 class ProtectionSitesResolver {
   @FieldResolver()
   async site(@Root() protectionSite: ProtectionSiteEntity) {
-    console.log("site to resolve", protectionSite)
+    // console.log("site to resolve", protectionSite)
     const site = await SiteEntity.findOneBy({
       siteId: protectionSite.siteId
     })
@@ -37,7 +37,7 @@ class ProtectionSitesResolver {
 
   @FieldResolver()
   async organization(@Root() protectionSite: ProtectionSiteEntity) {
-    console.log("organization to resolve", protectionSite)
+    // console.log("organization to resolve", protectionSite)
     const { organizationId } = protectionSite;
     if (!organizationId) {
       return null;

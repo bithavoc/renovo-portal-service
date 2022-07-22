@@ -16,7 +16,7 @@ export class AssetSite {
 class AssetSitesResolver {
   @FieldResolver()
   async site(@Root() assetSite: AssetSiteEntity) {
-    console.log("site to resolve", assetSite)
+    // console.log("site to resolve", assetSite)
     const site = await SiteEntity.findOneBy({
       siteId: assetSite.siteId
     })
